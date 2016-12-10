@@ -11,40 +11,13 @@ int main(int argc, char *argv[], char *envp[])
 	int i, readval;
 	i = 0;
 
-	while (1 == 1)
+	inp = get_line(STDIN_FILENO);
+	if (inp != NULL)
 	{
-		i = 0;
-		prompt();
-		inp = get_line(STDIN_FILENO);
-		if (inp != NULL)
-		{
-			tok = splitstr(inp, &delim, &save);
-			_putstring(tok);
-			if (access(tok, X_OK) == 0)
-			{
-				args[0] = argv[0];
-				arg = splitstr(NULL, &delim, &save);
-				_putstring(arg);
-				i = 1;
-				while (arg != NULL)
-				{
-					args[i++] = arg;
-					arg = splitstr(NULL, &delim, &save);
-				}
-					runProg(tok, args, envp);
-			}
-			else
-				_putstring("Unknown command.\n");
-			if (allstrcmp("hello", tok) == 0)
-				runProg("hello", args, envp);
-			if (allstrcmp("exit", tok) == 0)
-				_exit(19);
-			i = 0;
-			while (i < BUFSIZE)
-			{
-				buf[i++] = '\0';
-			}
-		}
+		tok = splitstr(inp, &delim, &save);
+		printf("%s", tok);
+		arg = splitstr(NULL, &delim, &save);
+		printf("%s", arg);
 	}
 }
 

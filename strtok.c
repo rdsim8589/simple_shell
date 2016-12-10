@@ -69,10 +69,10 @@ char *splitstr(char *str, const char *delim, char **saveptr)
 		str++; /* we could check here for additional delims each time we rotate! */
 		i++; /* for multiple delim setup (when we want to use ;, etc) */
 	}
-	tok[i] = '\0';
 	if (*str == '\0') /* null found, this is our last word */
 		*saveptr = NULL;
 	else
 		*saveptr = str + 1; /* save the letter after the null we just placed for next time */
+	tok[i] = '\0';
 	return (tok); /* return a pointer to our new token */
 }
