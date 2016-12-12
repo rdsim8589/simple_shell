@@ -1,11 +1,17 @@
 #include "shell.h"
 
+/**
+ * cdBuiltin - function to execute the builtin CD command
+ * sets the pwd and oldpwd environmental variables appropriately
+ *
+ * @save: saveptr for tokens
+ * Return: 1 on success, 0 on failure
+ */
 int cdBuiltin(char *save)
 {
 	char *oldcwd, *home, *tok, *getenv;
 	char delim = ' ';
 
-	tok = NULL;
 	oldcwd = getcwd(NULL, 100);
 	home = getEnvPtr("HOME");
 	home = home + 5;
@@ -44,6 +50,14 @@ int cdBuiltin(char *save)
 	return (0);
 }
 
+/**
+ * checkBuiltins - checks for builtin commands matching the first inputted word
+ *
+ * @inp: input string from main
+ * @save: saveptr for tokens
+ *
+ * Return: returns 1 on success, 0 on failure.
+ */
 int checkBuiltins(char *inp, char *save)
 {
 	int i;
@@ -67,8 +81,7 @@ int checkBuiltins(char *inp, char *save)
 		if (tok != NULL)
 			i = atoi(tok);
 		else
-			i = 0;
-		_exit(i);
+		_exit(0);
 	}
 	else if (allstrcmp(inp, "setenv") == 0)
 	{
@@ -105,6 +118,12 @@ int checkBuiltins(char *inp, char *save)
 	return (1);
 }
 
+/**
+ * getEnvPtr - gets a pointer to a matching environment variable
+ *
+ * @name: name of environment variable to search for
+ * Return: returns a pointer to the variable, or NULL if none found
+ */
 char *getEnvPtr(char *name)
 {
 	int i;
@@ -119,6 +138,15 @@ char *getEnvPtr(char *name)
 	return (NULL);
 }
 
+/**
+ * setEnvPtr - sets an environment variable to a new value
+ * creates a new one if none found
+ *
+ * @envname: Name to variable to set/create
+ * @vale: Value for environmental varialbe
+ * Return: returns a pointer to the new environmental variable,
+ *
+ */
 char *setEnvPtr(char *envname, char *value)
 {
 	char *envPtr, *newEnvPtr;
