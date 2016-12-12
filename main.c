@@ -1,190 +1,199 @@
 #include "shell.h"
 
-#define BUFSIZE 1024
-#define ARGS 256
-
-int main(int argc, char *argv[], char *envp[])
+/**
+ * main - entry point for shell program
+ * loops input for a shell, splits them into appropriate actions
+ *
+ * @argc: argument count
+ * @argv: arguments passed
+ * Return: return values in man page
+ */
+int main(int argc, char *argv[])
 {
-	char buf[BUFSIZE];
-	char *save, *tok, *walk, *inp, *arg, *args[ARGS];
+	char *save, *tok, *inp, **args;
 	char delim = ' ';
-	int i, readval;
-	i = 0;
 
-	while (1 == 1)
+	(void) argc; /* need to use this to check to check for scripts*/
+	signal(SIGINT, SIG_IGN); /* Ignore any SIGINT (ctrl-c) signal */
+	while (1)
 	{
-		i = 0;
 		prompt();
 		inp = get_line(STDIN_FILENO);
+		args = NULL;
 		if (inp != NULL)
 		{
 			tok = splitstr(inp, &delim, &save);
-			_putstring(tok);
-			if (access(tok, X_OK) == 0)
+			if (checkBuiltins(inp, save) == 0)
 			{
-				args[0] = argv[0];
-				arg = splitstr(NULL, &delim, &save);
-				_putstring(arg);
-				i = 1;
-				while (arg != NULL)
+				if (tok[0] == '.' && tok[1] == '/')
 				{
-					args[i++] = arg;
-					arg = splitstr(NULL, &delim, &save);
+					tok = tok + 2;
+					if (access(tok, X_OK) == 0)
+					{
+						args = getArgs(tok, argv, save);
+						runProg(tok, args);
+					}
+					else
+					{
+						tok = (tok - 2);
+						_putstring(tok);
+						_putstring(": No such file or directory.\n");
+					}
 				}
-					runProg(tok, args, envp);
+				else
+					if (checkPath(tok, argv, save) == 0)
+					{
+						_putstring(tok); _putstring(": command not found.\n");
+					}
 			}
-			else
-				_putstring("Unknown command.\n");
-			if (allstrcmp("hello", tok) == 0)
-				runProg("hello", args, envp);
-			if (allstrcmp("exit", tok) == 0)
-				_exit(19);
-			i = 0;
-			while (i < BUFSIZE)
-			{
-				buf[i++] = '\0';
-			}
+			free(inp);
+			save = NULL;
 		}
 	}
 }
 
-
-int runProg(char *name, char *argv[], char *envp[])
+/**
+ * checkPath - checks to see if a program is located in $PATH
+ * if it is, will ruin the program and return 1
+ *
+ * @inp: input string we're working with
+ * @argv: program argv
+ * @save: splitstring save pointer
+ *
+ * Return: returns 1 if program ran, 0 if some sort of error
+ */
+int checkPath(char *inp, char *argv[], char *save)
 {
-	pid_t cpid, rpid;
+	int j;
+	char *temp, *path[PATHSIZE], *tok, **args, *pathsave;
+	char delim2 = '=';
+	char colon = ':';
+
+	if (getEnvPtr("PATH") != NULL)
+	{
+		j = 0;
+		temp = _strdup(getEnvPtr("PATH")); /* tmp to avoid mangling env */
+		tok = splitstr(temp, &delim2, &pathsave);
+		if (tok != NULL)
+			tok = splitstr(NULL, &colon, &pathsave);
+		while (tok != NULL)
+		{
+			path[j++] = tok;
+			tok = splitstr(NULL, &colon, &pathsave);
+		}
+		path[j] = NULL;
+		free(temp);
+		tok = inp; j = 0;
+		while (path[j] != NULL)
+		{
+			temp = dir_concat(path[j], tok);
+			if (access(temp, X_OK) == 0)
+			{
+				args = getArgs(tok, argv, save);
+				runProg(temp, args);
+				break;
+			}
+			free(temp);
+			j++;
+		}
+		if (path[j] != NULL)
+		{
+			free(temp);
+			return (1);
+		}
+	}
+	return (0);
+
+}
+
+
+/**
+ * freeArgs - frees a 2d array
+ *
+ * @args: argument array
+ */
+void freeArgs(char **args)
+{
+	int i;
+
+	i = 0;
+	if (args != NULL)
+	{
+		while (args[i] != NULL)
+		{
+			free(args[i]);
+			i++;
+		}
+		free(args);
+	}
+}
+
+
+/**
+ * getArgs - creates a 2d array of arguments
+ * last argument will be null, first will be main's argv[0]
+ *
+ * @argv: argv for main
+ * @save: saveptr for arguments
+ * Return: returns a 2d array
+ */
+char **getArgs(char *tok, char *argv[], char *save)
+{
+	char **args;
+	char *arg;
+	char delim = ' ';
+	int i;
+
+/* Need a clever way to get the number of args before allocating
+ * Currently this just allocates space out for 100 pntrs, that's... a lot
+ */
+	(void) argv;
+	args = malloc(sizeof(char *) * 100);
+	arg = NULL;
+	args[0] = tok;
+	arg = splitstr(NULL, &delim, &save);
+	i = 1;
+	while (arg != NULL)
+	{
+		args[i++] = arg;
+		arg = splitstr(NULL, &delim, &save);
+	}
+	args[i] = NULL;
+
+	return (args);
+}
+
+
+/**
+ * runProg - runs a program by forking and running it on the child
+ *
+ * @name: name of program (including whole path)
+ * @argv: 2d array of arguments, either from main, or from getArgs
+ * Return: returns -1 on failure, or the exit status of the child
+ */
+int runProg(char *name, char *argv[])
+{
+	pid_t cpid;
 	int cstatus;
 
 	cpid = fork();
 	if (cpid == -1) /* if fork returns -1, it failed */
 	{
 		_putstring("Failure to fork!");
-		exit (9);
+		exit(9);
 	}
-	else if (cpid == 0) { /* if fork return is 0, we are the child proc */
-		execve(name, argv, envp);
-		_putstring("Attempted to run unknown command.\n");  /* execve should never return! */
+	else if (cpid == 0) /* if fork return is 0, we are the child proc */
+	{
+		execve(name, argv, environ);
+		_putstring("Attempted to run unknown command: ");
+		_putstring(name);
+		_putchar(10);
 		return (-1);
 	}
 	else /* if neither are true, we're in the parent */
 	{
-		rpid = wait(&cstatus); /* wait til we get back */
+		wait(&cstatus); /* wait til we get back */
 		return (cstatus); /* now return the child's exit status */
 	}
 
-}
-
-/**
- * splitstr - splits a string into tokens by deliminator
- * first call requires a string, all subsequent calls
- * require NULL to get more tokens from saved string
- *
- * @str: string to tokenize
- * @delim: deliminator
- * @saveptr: ptr used to save locations
- */
-char *splitstr(char *str, const char *delim, char **saveptr)
-{
-	char de;
-	char *tok;
-	int i;
-
-	if (str == NULL) /*if str is null, we check saveptr*/
-	{
-		if (*saveptr == NULL) /*if saveptr is also null, we're done*/
-			return (NULL);
-		str = *saveptr; /*if saveptr isn't null, let's drag it back up */
-	}
-	i = 0;
-	tok = str; /* tok will start where str starts now */
-	while (*str != '\0' && *str != *delim) /* move forward until we find a delim or null */
-	{
-		str++; /* we could check here for additional delims each time we rotate! */
-		i++; /* for multiple delim setup (when we want to use ;, etc) */
-	}
-	if (*str == '\0') /* null found, this is our last word */
-		*saveptr = NULL;
-	else
-		*saveptr = str + 1; /* save the letter after the null we just placed for next time */
-	tok[i] = '\0';
-	return (tok); /* return a pointer to our new token */
-}
-
-
-/**
- * allstrcmp - compares two strings, INCLUDING null terminator!
- *
- *
- * @s1: first string
- * @s2: second string
- * Return: difference in ASCII value between string 1 and string 2
- */
-int allstrcmp(char *s1, char *s2)
-{
-	int i;
-
-	i = 0;
-	if (s1[i] == '\0' || s2[i] == '\0')
-		return (-1);
-	while (s1[i] != '\0' && s2[i] != '\0')
-	{
-		if (s1[i] != s2[i])
-			return ((s1[i] - '0') - (s2[i] - '0'));
-		i++;
-	}
-	if (s1[i] == '\0' && s2[i] == '\0')
-		return (0);
-	return (i);
-}
-
-void prompt(void)
-{
-	_putchar('$');
-	_putchar(' ');
-}
-
-char *get_line(const int file)
-{
-	char *buf;
-	int readval;
-
-	buf = malloc(BUFSIZE * sizeof(char));
-	if (buf == NULL)
-		return (NULL);
-	readval = read(file, buf, BUFSIZE);
-	if (readval == 1)
-		return (NULL);
-	if (readval == -1)
-		return (NULL);
-	buf[readval - 1] = '\0';
-	return (buf);
-}
-
-/**
- * _putstring - prints a string to stdout, without a newline
- *
- * @str: string to print
- * Return: void
- */
-
-void _putstring(char *str)
-{
-	int i;
-
-	if (str == NULL)
-		return;
-	i = 0;
-	while (str[i] != '\0')
-		_putchar(str[i++]);
-}
-
-/**
- * _putchar - writes the character c to stdout
- * @c: The character to print
- *
- * Return: On success 1.
- * On error, -1 is returned, and errno is set appropriately.
- */
-int _putchar(char c)
-{
-	return (write(1, &c, 1));
 }
