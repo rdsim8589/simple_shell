@@ -5,9 +5,11 @@
  */
 void prompt(void)
 {
+	_putstring(ANSI_COLOR_GREEN);
 	_putstring(getcwd(NULL, 100));
 	_putchar('$');
 	_putchar(' ');
+	_putstring(ANSI_COLOR_BLUE);
 }
 
 /**
