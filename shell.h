@@ -18,6 +18,7 @@ extern char **environ;
 #define ANSI_COLOR_RESET   "\x1b[0m"
 int checkPath(char *inp, char *argv[], char *save);
 int _putchar(char c);
+int unsetEnv(char *name);
 void _putstring(char *str);
 int runProg(char *name, char *argv[]);
 char *splitstr(char *str, const char *delim, char **saveptr);

@@ -99,7 +99,8 @@ int checkPath(char *inp, char *argv[], char *save)
 		if (path[j] != NULL)
 		{
 			free(temp);
-			return (1);
+			freeArgs(args);
+			return (1); /* Need to free 2d array for path either way, on return 1 or 0! */
 		}
 	}
 	return (0);
@@ -117,15 +118,12 @@ void freeArgs(char **args)
 	int i;
 
 	i = 0;
-	if (args != NULL)
+	while (args[i] != NULL)
 	{
-		while (args[i] != NULL)
-		{
-			free(args[i]);
-			i++;
-		}
-		free(args);
+		free(args[i]);
+		i++;
 	}
+	free(args);
 }
 
 
@@ -187,12 +185,13 @@ int runProg(char *name, char *argv[])
 		execve(name, argv, environ);
 		_putstring("Attempted to run unknown command: ");
 		_putstring(name);
-		_putchar(10);
+		_putchar('\n');
 		return (-1);
 	}
 	else /* if neither are true, we're in the parent */
 	{
 		wait(&cstatus); /* wait til we get back */
+		free(argv);
 		return (cstatus); /* now return the child's exit status */
 	}
 

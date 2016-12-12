@@ -74,6 +74,7 @@ int checkBuiltins(char *inp, char *save)
 	else if (allstrcmp(inp, "exit") == 0) /* probably split this into a dif func*/
 	{
 		tok = splitstr(NULL, &delim, &save);
+		free(inp);
 		if (tok != NULL)
 			i = atoi(tok); /*atoi if there's an arg so we can exit w/ different statuses*/
 		else
@@ -84,11 +85,13 @@ int checkBuiltins(char *inp, char *save)
 	{
 		tok = splitstr(NULL, &delim, &save);
 		value = splitstr(NULL, &delim, &save);
-		if (setEnvPtr(tok, value) == NULL) /*return 0 on failure, otherwise will fall through to 1*/
-			return (0);
+		setEnvPtr(tok, value);
 	}
 	else if (allstrcmp(inp, "unsetenv") == 0)
-		_putstring("Run unsetenv");
+	{
+		tok = splitstr(NULL, &delim, &save);
+		return (unsetEnv(tok));
+	}
 	else if (allstrcmp(inp, "history") == 0)
 		_putstring("Run history");
 	else if (allstrcmp(inp, "cd") == 0)
@@ -124,6 +127,39 @@ char *getEnvPtr(char *name)
 	return (NULL);
 }
 
+/**
+ * unsetEnv - removes an environmental variable
+ *
+ * @name: name of environmental variable to remove
+ * Return: returns 1 on success, -1 on failure
+ */
+int unsetEnv(char *name)
+{
+	int i;
+	i = 0;
+	if (name == NULL)
+	{
+		_putstring("Invalid name.");
+		return (-1);
+	}
+	while (environ[i] != NULL)
+	{
+		if (_strcmp(name, environ[i]) == 0)
+		{
+			while (environ[i + 1] != NULL)
+			{
+				environ[i] = environ[i + 1];
+				i++;
+			}
+			environ[i] = NULL;
+			return (1);
+		}
+		i++;
+	}
+	_putstring("No such environmental variable.");
+	return (-1);
+}
+
 
 /**
  * setEnvPtr - sets an environment variable to a new value
@@ -140,6 +176,16 @@ char *setEnvPtr(char *envname, char *value)
 	char equals = '=';
 	int i = 0;
 /*this needs error checking on the return from malloc'd functions*/
+	if (envname == NULL)
+	{
+		_putstring("Invalid environment variable name.\n");
+		return (NULL);
+	}
+	if (value == NULL)
+	{
+		_putstring("Invalid value for enviroment variable.\n");
+		return (NULL);
+	}
 	while (environ[i] != NULL)
 	{
 		if (_strcmp(envname, environ[i]) == 0) /* loop til you find a match, or null*/

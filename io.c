@@ -5,11 +5,15 @@
  */
 void prompt(void)
 {
+	char *cwd;
+
+	cwd = getcwd(NULL, 100);
 	_putstring(ANSI_COLOR_GREEN);
-	_putstring(getcwd(NULL, 100));
+	_putstring(cwd);
 	_putchar('$');
 	_putchar(' ');
-	_putstring(ANSI_COLOR_BLUE);
+	_putstring(ANSI_COLOR_RED);
+	free(cwd);
 }
 
 /**
