@@ -22,21 +22,40 @@ void prompt(void)
  * @file: file description
  * Return: returns a line of input as a single string
  */
-char *get_line(const int file)
+char *get_line(const int file, char *buf_full)
 {
-	char *buf;
-	int readval;
+	char buf[1024], *line_buf;
+	int readval, i, j;
+	static int buf_i = 0;
 
-	buf = malloc(BUFSIZE * sizeof(char));
+	j = 0;
 	if (buf == NULL)
 		return (NULL);
-	readval = read(file, buf, BUFSIZE);
+	if (*buf_full == 1)
+		readval = read(file, buf, BUFSIZE);
 	if (readval == 1)
 		return (NULL);
 	if (readval == -1)
 		return (NULL);
-	buf[readval - 1] = '\0';
-	return (buf);
+	if (readval >= BUFSIZE)
+		/* realloc space for buf and read file again */
+		return (NULL);
+	for (i = buf_i; buf[i] != ';' && buf[i] != '\n'; i++)
+		j++;
+	/* considering mallocing more space to account for expansion */
+	line_buf = malloc((j + 1) * sizeof(char));
+	i = (i - buf_i);
+	for (j = 0; j < i; j++)
+		/* here is where to deal with expansion */
+	{
+		line_buf[j] = buf[buf_i++];
+	}
+	line_buf[j] = '\0';
+	if (buf_i >= readval)
+	{
+		*buf_full = 0;
+	}
+	return (line_buf);
 }
 
 /**
