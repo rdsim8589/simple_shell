@@ -22,7 +22,7 @@ void prompt(void)
  * @file: file description
  * Return: returns a line of input as a single string
  */
-char *get_line(const int file, char *buf_full)
+char *get_line(const int file, int *buf_full)
 {
 	char buf[1024], *line_buf;
 	int i, j, readval;
@@ -45,28 +45,14 @@ char *get_line(const int file, char *buf_full)
 		readval_num += readval;
 	}
 	j = 0;
-	_putstring("zero i: ");
-	putchar(buf_i + '0');
-	putchar('\n');
-
 	for (i = buf_i; buf[i] != ';' && buf[i] != '\n'; i++)
 	{
-		_putstring("enter i for loop\n");
 		j++;
 	}
-	_putstring("value j:");
-	putchar(j + '0');
-	putchar('\n');
-	_putstring("first i: ");
-	putchar(i + '0');
-	putchar('\n');
 
 	/* considering mallocing more space to account for expansion */
 	line_buf = malloc((j + 1) * sizeof(char));
 	i = (i - buf_i);
-	_putstring("second i: ");
-	putchar(i + '0');
-	putchar('\n');
 
 	for (j = 0; j <= i; j++)
 		/* here is where to deal with expansion */
@@ -75,18 +61,16 @@ char *get_line(const int file, char *buf_full)
 	}
 	line_buf[j] = '\0';
 	/* needs to read again if BUFSIZE is exceeded */
-	putchar(buf_i + '0');
-	putchar('\n');
-	putchar(readval + '0');
-	putchar('\n');
 	if (buf_i >= readval - 1)
 	{
 		_putstring("get_line: enter buf_full\n");
 		buf_i = 0;
 		*buf_full = 0;
 	}
-	_putstring(line_buf);
-	putchar('\n');
+	else
+	{
+		(*buf_full)++;
+	}
 	return (line_buf);
 }
 
