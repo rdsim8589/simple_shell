@@ -12,17 +12,15 @@ int main(int argc, char *argv[])
 {
 	char *save, *tok, *inp, **args;
 	char delim = ' ';
-	char buf_full;
-
+	int buf_full;
 	(void) argc; /* need to use this to check to check for scripts*/
 	signal(SIGINT, SIG_IGN); /* Ignore any SIGINT (ctrl-c) signal */
 	while (1)
 	{
-		prompt();
 		buf_full = 1;
-		while (buf_full == 1)
+		prompt();
+		while (buf_full >= 1)
 		{
-			_putstring("start");
 			inp = get_line(STDIN_FILENO, &buf_full);
 			if (inp[0] == 'x')
 				exit(98);
