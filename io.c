@@ -59,7 +59,7 @@ char *get_line(const int file, int *buf_full)
 	{
 		line_buf[j] = buf[buf_i++];
 	}
-	line_buf[j] = '\0';
+	line_buf[j - 1] = '\0';
 	/* needs to read again if BUFSIZE is exceeded */
 	if (buf_i >= readval - 1)
 	{
