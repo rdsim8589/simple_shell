@@ -7,43 +7,46 @@
  * @save: saveptr for tokens
  * Return: 1 on success, 0 on failure
  */
-int cdBuiltin(char *save)
+int cdBuiltin(char *save, env_t *head)
 {
-	char *oldcwd, *home, *tok, *getenv;
+	char *oldcwd, *home, *tok;
 	char delim = ' ';
 
 	tok = NULL;
 	oldcwd = getcwd(NULL, 100);
-	home = getEnvPtr("HOME");
-	home = home + 5;
+	home = (getEnvPtr("HOME", head))->value;
 
 	tok = splitstr(NULL, &delim, &save);
 	if (tok == NULL) /*If no argument, we want to go HOME */
 	{
 		chdir(home); /*Change to the home directory, we need to error check this!*/
-		setEnvPtr("PWD", home); /*sets PWD to home, since we're going there, and OLDPWD to where we're at now*/
-		setEnvPtr("OLDPWD", oldcwd); /*this function should never fail, so probably don't need to error check*/
+		setEnvPtr("PWD", home, head); /*sets PWD to home, since we're going there, and OLDPWD to where we're at now*/
+		setEnvPtr("OLDPWD", oldcwd, head); /*this function should never fail, so probably don't need to error check*/
+		free(oldcwd);
 		return (1); /*return 1, success*/
 	}
 	if (tok[0] == '-') /*if we do cd -*/
 	{
-		if (getEnvPtr("OLDPWD") == NULL)
+		if (getEnvPtr("OLDPWD", head) == NULL)
 		{
 			_putstring("cd: OLDPWD not set"); /*if we don't have an OLDPWD, can't go there*/
+			free(oldcwd);
 			return (0);
 		}
-		tok = getEnvPtr("OLDPWD") + 7; /*if we do, advance the ptr by 7 to get past OLDPWD=*/
+		tok = (getEnvPtr("OLDPWD", head))->value; /*if we do, advance the ptr by 7 to get past OLDPWD=*/
 	}
 	if (chdir(tok) != -1) /*can we go there? this includes OLDPWD*/
 	{
-		setEnvPtr("PWD", tok); /*if so, set our PWD and OLDPWD and bounce*/
-		setEnvPtr("OLDPWD", oldcwd);
+		setEnvPtr("PWD", tok, head); /*if so, set our PWD and OLDPWD and bounce*/
+		setEnvPtr("OLDPWD", oldcwd, head);
+		free(oldcwd);
 		return (1);
 	}
 	_putstring("cd: Invalid folder."); /* Need error codes for why it's invalid!
 					    *  Need to know if it's an access issue,
 					    * or the folder simply doesn't exist.
 					    */
+	free(oldcwd);
 	return (0);
 }
 
@@ -55,26 +58,30 @@ int cdBuiltin(char *save)
  *
  * Return: returns 1 on success, 0 on failure.
  */
-int checkBuiltins(char *inp, char *save)
+int checkBuiltins(char *inp, char *save, env_t **environ)
 {
 	int i;
 	char *value, *tok;
+	env_t *walk;
 	char delim = ' ';
 
+	walk = *environ;
 	if (allstrcmp(inp, "env") == 0) /*if the first word is env, run env*/
 	{
-		i = 0;
-		while (environ[i] != NULL)
+		while (walk != NULL)
 		{
-			_putstring(environ[i]); /*print the whole environ list*/
-			_putchar(10);
-			i++;
+			_putstring(walk->name);
+			_putchar('=');
+			_putstring(walk->value);
+			_putchar('\n');
+			walk = walk->next;
 		}
 	}
 	else if (allstrcmp(inp, "exit") == 0) /* probably split this into a dif func*/
 	{
 		tok = splitstr(NULL, &delim, &save);
 		free(inp);
+		free_list(*environ);
 		if (tok != NULL)
 			i = atoi(tok); /*atoi if there's an arg so we can exit w/ different statuses*/
 		else
@@ -85,17 +92,17 @@ int checkBuiltins(char *inp, char *save)
 	{
 		tok = splitstr(NULL, &delim, &save);
 		value = splitstr(NULL, &delim, &save);
-		setEnvPtr(tok, value);
+		setEnvPtr(tok, value, *environ);
 	}
 	else if (allstrcmp(inp, "unsetenv") == 0)
 	{
 		tok = splitstr(NULL, &delim, &save);
-		return (unsetEnv(tok));
+		return (unsetEnv(tok, environ));
 	}
 	else if (allstrcmp(inp, "history") == 0)
 		_putstring("Run history");
 	else if (allstrcmp(inp, "cd") == 0)
-		cdBuiltin(save);
+		cdBuiltin(save, *environ);
 	else if (allstrcmp(inp, "help") == 0)
 		_putstring("Run help");
 	else
@@ -111,18 +118,17 @@ int checkBuiltins(char *inp, char *save)
  * @name: name of environment variable to search for
  * Return: returns a pointer to the variable, or NULL if none found
  */
-char *getEnvPtr(char *name)
-{
-	int i;
 
-	i = 0;
-	while (environ[i] != NULL)
+env_t *getEnvPtr(char *name, env_t *head)
+{
+	env_t *environ;
+
+	environ = head;
+	while (environ != NULL)
 	{
-		if (_strcmp(name, environ[i]) == 0) /*just scrapes the env list, and if it finds
-						     *a partial match, it returns it, including the name*/
-			/*Does it even need to return the name, or should we lop it off here and save time?*/
-			return (environ[i]);
-		i++;
+		if (_strcmp(name, environ->name) == 0)
+			return (environ);
+		environ = environ->next;
 	}
 	return (NULL);
 }
@@ -133,27 +139,40 @@ char *getEnvPtr(char *name)
  * @name: name of environmental variable to remove
  * Return: returns 1 on success, -1 on failure
  */
-int unsetEnv(char *name)
+int unsetEnv(char *name, env_t **head)
 {
 	int i;
-	i = 0;
+	env_t *temp, *last;
+
+	temp = *head;
 	if (name == NULL)
 	{
 		_putstring("Invalid name.");
 		return (-1);
 	}
-	while (environ[i] != NULL)
+	i = 0;
+	while (temp != NULL)
 	{
-		if (_strcmp(name, environ[i]) == 0)
+		if (_strcmp(name, temp->name) == 0)
 		{
-			while (environ[i + 1] != NULL)
+			if (i == 0)
 			{
-				environ[i] = environ[i + 1];
-				i++;
+				*head = temp->next;
+				free(temp->name);
+				free(temp->value);
+				free(temp);
 			}
-			environ[i] = NULL;
+			else
+			{
+				last->next = temp->next;
+				free(temp->name);
+				free(temp->value);
+				free(temp);
+			}
 			return (1);
 		}
+		last = temp;
+		temp = temp->next;
 		i++;
 	}
 	_putstring("No such environmental variable.");
@@ -170,12 +189,12 @@ int unsetEnv(char *name)
  * Return: returns a pointer to the new environmental variable
  * need to error check the malloc'd returns and return null on fail
  */
-char *setEnvPtr(char *envname, char *value)
+env_t *setEnvPtr(char *envname, char *value, env_t *head)
 {
-	char *envPtr, *newEnvPtr;
-	char equals = '=';
-	int i = 0;
-/*this needs error checking on the return from malloc'd functions*/
+	env_t *environ;
+	char *newvalue;
+
+	environ = head;
 	if (envname == NULL)
 	{
 		_putstring("Invalid environment variable name.\n");
@@ -186,23 +205,13 @@ char *setEnvPtr(char *envname, char *value)
 		_putstring("Invalid value for enviroment variable.\n");
 		return (NULL);
 	}
-	while (environ[i] != NULL)
+	environ = getEnvPtr(envname, head);
+	if (environ != NULL)
 	{
-		if (_strcmp(envname, environ[i]) == 0) /* loop til you find a match, or null*/
-			break;
-		i++;
+		newvalue = _strdup(value);
+		free (environ->value);
+		environ->value = newvalue;
+		return(environ);
 	}
-	if (environ[i] == NULL) /*if we're at null*/
-	{
-		environ[i + 1] = NULL; /*add null one down, so functions will still stop there*/
-		envPtr = str_concat(envname, &equals); /*concat an = sign to envname, prob easier way than this*/
-	}
-	else
-	{
-		envPtr = _strdup(environ[i]); /*if we're not at null, we found one, so just copy it*/
-	}
-	envPtr[_strlen(envname) + 1]  = '\0'; /*make sure there's a null after NAME=*/
-	newEnvPtr = str_concat(envPtr, value); /*concat on the value*/
-	environ[i] = newEnvPtr; /*pop it into environ*/
-	return (environ[i]); /*return the result*/
+	return (addEnv(&head, envname, value)); /*return the result*/
 }

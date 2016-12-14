@@ -8,13 +8,16 @@
  * @argv: arguments passed
  * Return: return values in man page
  */
-int main(int argc, char *argv[])
+int main(int argc, char *argv[], char*env[])
 {
 	char *save, *tok, *inp, **args;
 	char delim = ' ';
+	env_t *head;
 
-	(void) argc; /* need to use this to check to check for scripts*/
+	head = NULL;
+	(void) argc; /* need to use this to check to check for scripts later!*/
 	signal(SIGINT, SIG_IGN); /* Ignore any SIGINT (ctrl-c) signal */
+	initEnvList(env, &head);
 	while (1)
 	{
 		prompt();
@@ -23,7 +26,7 @@ int main(int argc, char *argv[])
 		if (inp != NULL)
 		{
 			tok = splitstr(inp, &delim, &save);
-			if (checkBuiltins(inp, save) == 0)
+			if (checkBuiltins(inp, save, &head) == 0)
 			{
 				if (tok[0] == '.' && tok[1] == '/')
 				{
@@ -31,7 +34,7 @@ int main(int argc, char *argv[])
 					if (access(tok, X_OK) == 0)
 					{
 						args = getArgs(tok, argv, save);
-						runProg(tok, args);
+						runProg(tok, args, head);
 					}
 					else
 					{
@@ -41,7 +44,7 @@ int main(int argc, char *argv[])
 					}
 				}
 				else
-					if (checkPath(tok, argv, save) == 0)
+					if (checkPath(tok, argv, save, head) == 0)
 					{
 						_putstring(tok); _putstring(": command not found.\n");
 					}
@@ -62,27 +65,23 @@ int main(int argc, char *argv[])
  *
  * Return: returns 1 if program ran, 0 if some sort of error
  */
-int checkPath(char *inp, char *argv[], char *save)
+int checkPath(char *inp, char *argv[], char *save, env_t *head)
 {
 	int j;
-	char *temp, *path[PATHSIZE], *tok, **args, *pathsave;
-	char delim2 = '=';
+	char *temp, *path[PATHSIZE], *tok, **args, *pathsave, *paths;
 	char colon = ':';
 
-	if (getEnvPtr("PATH") != NULL)
+	if (getEnvPtr("PATH", head) != NULL)
 	{
 		j = 0;
-		temp = _strdup(getEnvPtr("PATH")); /* tmp to avoid mangling env */
-		tok = splitstr(temp, &delim2, &pathsave);
-		if (tok != NULL)
-			tok = splitstr(NULL, &colon, &pathsave);
+		paths = _strdup((getEnvPtr("PATH", head))->value); /* tmp to avoid mangling env */
+		tok = splitstr(paths, &colon, &pathsave);
 		while (tok != NULL)
 		{
 			path[j++] = tok;
 			tok = splitstr(NULL, &colon, &pathsave);
 		}
 		path[j] = NULL;
-		free(temp);
 		tok = inp; j = 0;
 		while (path[j] != NULL)
 		{
@@ -90,19 +89,26 @@ int checkPath(char *inp, char *argv[], char *save)
 			if (access(temp, X_OK) == 0)
 			{
 				args = getArgs(tok, argv, save);
-				runProg(temp, args);
+				runProg(temp, args, head);
 				break;
 			}
-			free(temp);
+			if (temp != NULL)
+			{
+				free(temp);
+				temp = NULL;
+			}
 			j++;
 		}
 		if (path[j] != NULL)
 		{
-			free(temp);
-			freeArgs(args);
+			if (temp != NULL)
+				free(temp);
+			free(paths);
 			return (1); /* Need to free 2d array for path either way, on return 1 or 0! */
 		}
 	}
+	free(paths);
+	free(temp);
 	return (0);
 
 }
@@ -113,15 +119,13 @@ int checkPath(char *inp, char *argv[], char *save)
  *
  * @args: argument array
  */
-void freeArgs(char **args)
+void freeArgs(char **args, int envsize)
 {
 	int i;
 
-	i = 0;
-	while (args[i] != NULL)
+	for (i = 0; i < envsize; i++)
 	{
 		free(args[i]);
-		i++;
 	}
 	free(args);
 }
@@ -169,11 +173,13 @@ char **getArgs(char *tok, char *argv[], char *save)
  * @argv: 2d array of arguments, either from main, or from getArgs
  * Return: returns -1 on failure, or the exit status of the child
  */
-int runProg(char *name, char *argv[])
+int runProg(char *name, char *argv[], env_t *head)
 {
 	pid_t cpid;
-	int cstatus;
+	int cstatus, envsize;
+	char **envs;
 
+	envs = buildEnv(head, &envsize);
 	cpid = fork();
 	if (cpid == -1) /* if fork returns -1, it failed */
 	{
@@ -182,7 +188,7 @@ int runProg(char *name, char *argv[])
 	}
 	else if (cpid == 0) /* if fork return is 0, we are the child proc */
 	{
-		execve(name, argv, environ);
+		execve(name, argv, envs);
 		_putstring("Attempted to run unknown command: ");
 		_putstring(name);
 		_putchar('\n');
@@ -192,6 +198,7 @@ int runProg(char *name, char *argv[])
 	{
 		wait(&cstatus); /* wait til we get back */
 		free(argv);
+		freeArgs(envs, envsize);
 		return (cstatus); /* now return the child's exit status */
 	}
 

@@ -81,7 +81,7 @@ char *dir_concat(char *s1, char *s2)
 		s1 = "";
 	if (s2 == NULL)
 		s2 = "";
-	size = (_strlen(s1) + _strlen(s2) + 2);
+	size = (_strlen(s1) + _strlen(s2) + 3);
 	new = malloc(size);
 	if (new == NULL)
 		return (NULL);
