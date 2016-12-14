@@ -24,6 +24,8 @@ typedef struct env_s
 	struct env_s *next;
 } env_t;
 
+char *_memcpy(char *dest, char *src, unsigned int n);
+char *get_line();
 char **buildEnv(env_t *head, int *envsize);
 env_t *addEnv(env_t **head, char *name, char *value);
 void free_list(env_t *head);
@@ -35,7 +37,6 @@ void _putstring(char *str);
 int runProg(char *name, char *argv[], env_t *head);
 char *splitstr(char *str, const char *delim, char **saveptr);
 int allstrcmp(char *s1, char *s2);
-char *get_line(const int file);
 void prompt(void);
 int _strlen(char *s);
 char *_strcpy(char *dest, char *src);

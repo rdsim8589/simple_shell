@@ -21,9 +21,9 @@ int main(int argc, char *argv[], char*env[])
 	while (1)
 	{
 		prompt();
-		inp = get_line(STDIN_FILENO);
+		inp = get_line();
 		args = NULL;
-		if (inp != NULL)
+	        while (inp != NULL)
 		{
 			tok = splitstr(inp, &delim, &save);
 			if (checkBuiltins(inp, save, &head) == 0)
@@ -49,7 +49,7 @@ int main(int argc, char *argv[], char*env[])
 						_putstring(tok); _putstring(": command not found.\n");
 					}
 			}
-			free(inp);
+			inp = get_line(STDIN_FILENO);
 			save = NULL;
 		}
 	}
@@ -150,7 +150,7 @@ char **getArgs(char *tok, char *argv[], char *save)
  * Currently this just allocates space out for 100 pntrs, that's... a lot
  */
 	(void) argv;
-	args = malloc(sizeof(char *) * 100);
+	args = malloc(sizeof(char *) * 1000);
 	arg = NULL;
 	args[0] = tok;
 	arg = splitstr(NULL, &delim, &save);

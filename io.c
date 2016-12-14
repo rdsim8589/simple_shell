@@ -17,29 +17,6 @@ void prompt(void)
 }
 
 /**
- * get_line - gets a line of input from a source
- *
- * @file: file description
- * Return: returns a line of input as a single string
- */
-char *get_line(const int file)
-{
-	char *buf;
-	int readval;
-
-	buf = malloc(BUFSIZE * sizeof(char));
-	if (buf == NULL)
-		return (NULL);
-	readval = read(file, buf, BUFSIZE);
-	if (readval == 1)
-		return (NULL);
-	if (readval == -1)
-		return (NULL);
-	buf[readval - 1] = '\0';
-	return (buf);
-}
-
-/**
  * _putstring - prints a string to stdout, without a newline
  *
  * @str: string to print
