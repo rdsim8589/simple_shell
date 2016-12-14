@@ -58,7 +58,7 @@ int cdBuiltin(char *save, env_t *head)
  *
  * Return: returns 1 on success, 0 on failure.
  */
-int checkBuiltins(char *inp, char *save, env_t **environ)
+int checkBuiltins(char *inp, char *save, env_t **environ, hist_t **hist_head)
 {
 	int i;
 	char *value, *tok;
@@ -82,6 +82,7 @@ int checkBuiltins(char *inp, char *save, env_t **environ)
 		tok = splitstr(NULL, &delim, &save);
 		free(inp);
 		free_list(*environ);
+		clear_hist(hist_head);
 		if (tok != NULL)
 			i = atoi(tok); /*atoi if there's an arg so we can exit w/ different statuses*/
 		else
@@ -100,7 +101,7 @@ int checkBuiltins(char *inp, char *save, env_t **environ)
 		return (unsetEnv(tok, environ));
 	}
 	else if (allstrcmp(inp, "history") == 0)
-		_putstring("Run history");
+		print_hist(*hist_head);
 	else if (allstrcmp(inp, "cd") == 0)
 		cdBuiltin(save, *environ);
 	else if (allstrcmp(inp, "help") == 0)
