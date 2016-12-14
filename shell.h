@@ -23,7 +23,7 @@ void _putstring(char *str);
 int runProg(char *name, char *argv[]);
 char *splitstr(char *str, const char *delim, char **saveptr);
 int allstrcmp(char *s1, char *s2);
-char *get_line(const int file, char *buf_full);
+char *get_line(const int file, int *buf_full);
 void prompt(void);
 int _strlen(char *s);
 char *_strcpy(char *dest, char *src);
