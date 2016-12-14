@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <string.h>
+#include <fcntl.h>
 extern char **environ;
 #define BUFSIZE 1024
 #define ARGS 256
@@ -25,7 +26,7 @@ typedef struct env_s
 } env_t;
 
 char *_memcpy(char *dest, char *src, unsigned int n);
-char *get_line();
+char *get_line(int file);
 char **buildEnv(env_t *head, int *envsize);
 env_t *addEnv(env_t **head, char *name, char *value);
 void free_list(env_t *head);

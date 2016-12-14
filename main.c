@@ -13,15 +13,33 @@ int main(int argc, char *argv[], char*env[])
 	char *save, *tok, *inp, **args;
 	char delim = ' ';
 	env_t *head;
+	int file;
 
 	head = NULL;
+	if (argc == 1)
+		file = STDIN_FILENO;
+	else if (argc == 2)
+	{
+       		file = open(argv[1], O_RDONLY);
+		if (file == -1)
+		{
+			_putstring("Error opening file.");
+			_exit(9);
+		}
+	}
+	else
+	{
+		_putstring("Please run with no argument, or one argument to run from script.");
+		_exit(9);
+	}
 	(void) argc; /* need to use this to check to check for scripts later!*/
 	signal(SIGINT, SIG_IGN); /* Ignore any SIGINT (ctrl-c) signal */
 	initEnvList(env, &head);
 	while (1)
 	{
-		prompt();
-		inp = get_line();
+		if (argc == 1)
+		    prompt();
+		inp = get_line(file);
 		args = NULL;
 	        while (inp != NULL)
 		{
@@ -44,13 +62,19 @@ int main(int argc, char *argv[], char*env[])
 					}
 				}
 				else
-					if (checkPath(tok, argv, save, head) == 0)
+					if (checkPath(tok, args, save, head) == 0)
 					{
 						_putstring(tok); _putstring(": command not found.\n");
 					}
 			}
-			inp = get_line(STDIN_FILENO);
+			inp = get_line(file);
 			save = NULL;
+		}
+		if (inp == NULL && argc == 2)
+		{
+			free(inp);
+			free_list(head);
+			_exit(9);
 		}
 	}
 }

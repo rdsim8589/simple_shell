@@ -1,6 +1,6 @@
 #include "shell.h"
 
-char *get_line()
+char *get_line(int file)
 {
 	char *line, *newbuf;
 	int readval, i, bufsize;
@@ -14,7 +14,7 @@ char *get_line()
 		bufsize = 1024; /*bufsize starts at 1024*/
 		buf = malloc(sizeof(char) * bufsize);
 		memset(buf, '\0', bufsize);
-		readval = read(STDIN_FILENO, buf, 1024);
+		readval = read(file, buf, 1024);
 		total = readval; /*total is the total we've read, static*/
 		while (readval >= 1024) /*if we read 1024, there's more in stdin*/
 		{
@@ -44,6 +44,10 @@ char *get_line()
 	i = 0;
 	while (i <= total) /*run through and find ';' and '\n'*/
 	{
+		if (buf[i] == EOF)
+		{
+			buf[i] = '\0';
+		}
 		if (buf[i] == ';')
 		{
 			buf[i] = '\0';
