@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 {
 	char *save, *tok, *inp, **args;
 	char delim = ' ';
-	char buf_full = 1;
+	char buf_full;
 
 	(void) argc; /* need to use this to check to check for scripts*/
 	signal(SIGINT, SIG_IGN); /* Ignore any SIGINT (ctrl-c) signal */
@@ -22,12 +22,15 @@ int main(int argc, char *argv[])
 		buf_full = 1;
 		while (buf_full == 1)
 		{
+			_putstring("start");
 			inp = get_line(STDIN_FILENO, &buf_full);
+			if (inp[0] == 'x')
+				exit(98);
 			if (inp != NULL)
 			{
 				_putstring("input: ");
 				_putstring(inp);
-				_putchar('\0');
+				_putchar('\n');
 			}
 		}
 	}
