@@ -14,7 +14,9 @@ int main(int argc, char *argv[], char*env[])
 	char delim = ' ';
 	env_t *head;
 	int file;
+	hist_t *hist_head;
 
+	hist_head = NULL;
 	head = NULL;
 	if (argc == 1)
 		file = STDIN_FILENO;
@@ -39,12 +41,12 @@ int main(int argc, char *argv[], char*env[])
 	{
 		if (argc == 1)
 		    prompt();
-		inp = get_line(file);
+		inp = get_line(file, &hist_head);
 		args = NULL;
 	        while (inp != NULL)
 		{
 			tok = splitstr(inp, &delim, &save);
-			if (checkBuiltins(inp, save, &head) == 0)
+			if (checkBuiltins(inp, save, &head , &hist_head) == 0)
 			{
 				if (tok[0] == '.' && tok[1] == '/')
 				{
@@ -67,7 +69,7 @@ int main(int argc, char *argv[], char*env[])
 						_putstring(tok); _putstring(": command not found.\n");
 					}
 			}
-			inp = get_line(file);
+			inp = get_line(file, &hist_head);
 			save = NULL;
 		}
 		if (inp == NULL && argc == 2)
