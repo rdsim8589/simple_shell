@@ -1,9 +1,10 @@
 #include "shell.h"
 
-char *get_line(int file)
+char *get_line(int file, hist_t **hist_head)
 {
 	char *line, *newbuf;
 	int readval, i, bufsize;
+
 	static int total = 0;
 	static int printed = 0;
 	static int last = 0;
@@ -25,9 +26,11 @@ char *get_line(int file)
 			free(buf);
 			buf = newbuf; /*need to free buf here, gotta test more*/
 			readval = read(STDIN_FILENO, buf + (bufsize), 1024); /*read more*/
+			bufsize += 1024;
 			total += readval; /*add the readval to the total we've read*/
 			i++;
 		}
+		add_hist(total, hist_head, buf); /* create/add to history node */
 		bufhead = buf; /*bufhead is a ptr to the beginning of the buffer*/
 	}
 	else
