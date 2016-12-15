@@ -42,7 +42,6 @@ void clear_hist(hist_t **hist_head)
 	while (*hist_head != NULL)
 	{
 		hold = *hist_head;
-
 		(*hist_head) = (*hist_head)->next;
 		free(hold->entry);
 		free(hold);
