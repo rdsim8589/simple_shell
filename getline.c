@@ -30,6 +30,7 @@ char *get_line(int file, hist_t **hist_head)
 			total += readval; /*add the readval to the total we've read*/
 			i++;
 		}
+		buf[total - 1] = '\0';
 		add_hist(total, hist_head, buf); /* create/add to history node */
 		bufhead = buf; /*bufhead is a ptr to the beginning of the buffer*/
 	}
