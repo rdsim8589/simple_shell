@@ -81,8 +81,9 @@ int checkBuiltins(char *inp, char *save, env_t **environ, hist_t **hist_head)
 	{
 		tok = splitstr(NULL, &delim, &save);
 		free(inp);
-		free_list(*environ);
+		push_hist(*hist_head, *environ);
 		clear_hist(hist_head);
+		free_list(*environ);
 		if (tok != NULL)
 			i = atoi(tok); /*atoi if there's an arg so we can exit w/ different statuses*/
 		else
@@ -117,7 +118,8 @@ int checkBuiltins(char *inp, char *save, env_t **environ, hist_t **hist_head)
  * getEnvPtr - gets a pointer to a matching environment variable
  *
  * @name: name of environment variable to search for
- * Return: returns a pointer to the variable, or NULL if none found
+ * @head: the head of the env linked list
+ * Return: returns a pointer to the environment variable, or NULL if none found
  */
 
 env_t *getEnvPtr(char *name, env_t *head)

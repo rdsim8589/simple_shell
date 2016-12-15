@@ -17,6 +17,7 @@ extern char **environ;
 #define ANSI_COLOR_MAGENTA "\x1b[35m"
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
+#define HIST_FILE ".simple_shell_history"
 /**
  * struct env_s - a singly linked list
  * @name:
@@ -81,4 +82,5 @@ int _atoi(char *s);
 hist_t *add_hist(int total, hist_t **hist_head, char *buf);
 void clear_hist(hist_t **hist_head);
 void print_hist(hist_t *hist_head);
+void push_hist(hist_t *hist_head, env_t *head);
 #endif

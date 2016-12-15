@@ -11,6 +11,10 @@ hist_t *add_hist(int total, hist_t **hist_head, char *buf)
 	hist_t *new_hist;
 	hist_t *current;
 
+	if (buf[0] == ' ')
+	{
+		return (NULL);
+	}
 	new_hist = malloc(sizeof(hist_t));
 	if (new_hist == NULL)
 		return (NULL);
@@ -65,4 +69,98 @@ void print_hist(hist_t *hist_head)
 		hist_head = hist_head->next;
 		i++;
 	}
+}
+
+void push_hist(hist_t *hist_head, env_t *head)
+{
+	mode_t mode;
+	int file, err_w, err_c;
+	env_t *env_var;
+	char *home;
+
+	if (!hist_head || !head)
+		exit(100);
+	/* get the env for $HOME */
+	env_var = getEnvPtr("HOME", head);
+	home = env_var->value;
+	home = dir_concat(home, HIST_FILE);
+	mode = S_IRUSR | S_IWUSR;
+	file = open(home, O_CREAT | O_WRONLY | O_TRUNC, mode);
+	if (file == -1)
+	{
+		perror("Error opening file: ");
+		free(home);
+		exit(101);
+	}
+
+	while(hist_head != NULL)
+	{
+		if (hist_head->entry)
+		{
+			err_w = write(file, hist_head->entry, _strlen(hist_head->entry));
+			if (err_w == -1 || err_w != _strlen(hist_head->entry))
+			{
+				free(home);
+				exit(102);
+			}
+			err_w = write(file, "\n", 1);
+			if (err_w == -1 || err_w != 1)
+			{
+				free(home);
+				exit(103);
+			}
+		}
+		hist_head = hist_head->next;
+	}
+	err_c = close(file);
+	if (err_c == -1)
+	{
+		free(home);
+		exit(104);
+	}
+}
+
+
+hist_t *pull_hist(hist_t *hist_head, env_t *head)
+{
+	char *home;
+	env_t *env_var;
+	hist_t *hist_head;
+	int file, err_r, err_c, buf_len;
+
+	/* get the home and concat with the history direct */
+	env_var = getEnvPtr("HOME", head);
+	home = env_var->value;
+	home = dir_concat(home, HIST_FILE);
+
+	/* read the history file into a big buffer */
+	file = open(home, O_RDONLY);
+	if (file == -1)
+	{
+		_putstring("unable to open hist file");
+		return(NULL);
+	}
+	buf_len = _strlen(buff);
+	err_r = read(file, buf, buf_len);
+	i = 1;
+	while (i <= buf_len)
+	{
+		if 
+		/* scan through big buffer find '\n'  */
+			/* if there is a '\n' replace it with '\0' */
+		/* keep track a counter of the amount of nodes, i */
+
+		/* if the counter is greater than 4096 remove the head node of history  */
+		if (i > 4096)
+		{
+			temphisthead = histhead->next;
+			free(histhead-value);
+			free(histhead);
+			histhead = temphisthead;
+		}
+		/* add to the end of the history of the linked list */
+
+	}
+	/* return the ead of hist */
+	addnode(hbawdihadwai);
 }
