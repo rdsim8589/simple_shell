@@ -14,7 +14,6 @@ hist_t *add_hist(int total, hist_t **hist_head, char *buf)
 	new_hist = malloc(sizeof(hist_t));
 	if (new_hist == NULL)
 		return (NULL);
-
 	new_hist->entry = malloc(sizeof(char) * total);
 	_memcpy(new_hist->entry, buf, total);
 	new_hist->next = NULL;
@@ -60,6 +59,7 @@ void print_hist(hist_t *hist_head)
 	while (hist_head != NULL)
 	{
 		_putchar(i + '0');
+		_putchar(' ');
 		_putstring(hist_head->entry);
 		_putchar('\n');
 		hist_head = hist_head->next;
