@@ -149,3 +149,24 @@ env_t *addEnv(env_t **head, char *name, char *value)
 	}
 	return (newnode);
 }
+
+/**
+ * getEnvPtr - gets a pointer to a matching environment variable
+ *
+ * @name: name of environment variable to search for
+ * @head: the head of the env linked list
+ * Return: returns a pointer to the environment variable, or NULL if none found
+ */
+env_t *getEnvPtr(char *name, env_t *head)
+{
+	env_t *environ;
+
+	environ = head;
+	while (environ != NULL)
+	{
+		if (allstrcmp(name, environ->name) == 0)
+			return (environ);
+		environ = environ->next;
+	}
+	return (NULL);
+}

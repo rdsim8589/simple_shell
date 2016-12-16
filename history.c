@@ -97,7 +97,7 @@ void push_hist(hist_t *hist_head, env_t *head)
 		exit(101);
 	}
 
-	while(hist_head != NULL)
+	while (hist_head != NULL)
 	{
 		if (hist_head->entry)
 		{
