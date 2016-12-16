@@ -50,6 +50,7 @@ int cdBuiltin(char *save, env_t *head)
 	return (0);
 }
 
+
 /**
  * checkBuiltins - checks for builtin commands matching the first inputted word
  *
@@ -58,35 +59,20 @@ int cdBuiltin(char *save, env_t *head)
  *
  * Return: returns 1 on success, 0 on failure.
  */
-int checkBuiltins(char *inp, char *save, env_t **environ)
+int checkBuiltins(char *inp, char *save, env_t **environ, helper_t *helper)
 {
 	int i;
 	char *value, *tok;
-	env_t *walk;
 	char delim = ' ';
 
-	walk = *environ;
 	if (allstrcmp(inp, "env") == 0) /*if the first word is env, run env*/
 	{
-		while (walk != NULL)
-		{
-			_putstring(walk->name);
-			_putchar('=');
-			_putstring(walk->value);
-			_putchar('\n');
-			walk = walk->next;
-		}
+		listEnv(environ);
 	}
 	else if (allstrcmp(inp, "exit") == 0) /* probably split this into a dif func*/
 	{
 		tok = splitstr(NULL, &delim, &save);
-		free(inp);
-		free_list(*environ);
-		if (tok != NULL)
-			i = atoi(tok); /*atoi if there's an arg so we can exit w/ different statuses*/
-		else
-			i = 0;
-		_exit(i);
+		exitBuiltin(tok, inp, environ, helper);
 	}
 	else if (allstrcmp(inp, "setenv") == 0) /*setenv*/
 	{
@@ -97,7 +83,7 @@ int checkBuiltins(char *inp, char *save, env_t **environ)
 	else if (allstrcmp(inp, "unsetenv") == 0)
 	{
 		tok = splitstr(NULL, &delim, &save);
-		return (unsetEnv(tok, environ));
+		unsetEnv(tok, environ);
 	}
 	else if (allstrcmp(inp, "history") == 0)
 		_putstring("Run history");
@@ -111,6 +97,43 @@ int checkBuiltins(char *inp, char *save, env_t **environ)
 	return (1);
 }
 
+void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper)
+{
+	int i;
+
+	free(inp);
+	free_list(*environ);
+	free(helper->printed);
+	free(helper->total);
+	free(helper->last);
+	free(helper);
+	if (tok != NULL)
+		i = atoi(tok); /*atoi if there's an arg so we can exit w/ different statuses*/
+	else
+		i = 0;
+	_exit(i);
+}
+
+int listEnv(env_t **environ)
+{
+	env_t *walk;
+
+	walk = *environ;
+	if (walk == NULL)
+	{
+		_putstring("Issue printing environment variables!");
+		return (-1);
+	}
+	while (walk != NULL)
+	{
+		_putstring(walk->name);
+		_putchar('=');
+		_putstring(walk->value);
+		_putchar('\n');
+		walk = walk->next;
+	}
+	return (1);
+}
 
 /**
  * getEnvPtr - gets a pointer to a matching environment variable
@@ -118,7 +141,6 @@ int checkBuiltins(char *inp, char *save, env_t **environ)
  * @name: name of environment variable to search for
  * Return: returns a pointer to the variable, or NULL if none found
  */
-
 env_t *getEnvPtr(char *name, env_t *head)
 {
 	env_t *environ;
@@ -126,7 +148,7 @@ env_t *getEnvPtr(char *name, env_t *head)
 	environ = head;
 	while (environ != NULL)
 	{
-		if (_strcmp(name, environ->name) == 0)
+		if (allstrcmp(name, environ->name) == 0)
 			return (environ);
 		environ = environ->next;
 	}
@@ -147,7 +169,7 @@ int unsetEnv(char *name, env_t **head)
 	temp = *head;
 	if (name == NULL)
 	{
-		_putstring("Invalid name.");
+		_putstring("Invalid name.\n");
 		return (-1);
 	}
 	i = 0;

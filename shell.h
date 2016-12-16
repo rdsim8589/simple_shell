@@ -25,8 +25,21 @@ typedef struct env_s
 	struct env_s *next;
 } env_t;
 
+typedef struct helper_s
+{
+	env_t *env;
+	int *total;
+	int *bufsize;
+	int *printed;
+	int *last;
+} helper_t;
+
+helper_t *initHelper(env_t *env);
+void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper);
+char *parseDollar(char *buf, helper_t *helper);
+int listEnv(env_t **environ);
 char *_memcpy(char *dest, char *src, unsigned int n);
-char *get_line(int file);
+char *get_line(int file, helper_t *helper);
 char **buildEnv(env_t *head, int *envsize);
 env_t *addEnv(env_t **head, char *name, char *value);
 void free_list(env_t *head);
@@ -46,7 +59,7 @@ void addHistory(char **history, char *command);
 char *trim(char *string, int count);
 char *_strdup(char *str);
 void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
-int checkBuiltins(char *tok, char *save, env_t **head);
+int checkBuiltins(char *tok, char *save, env_t **head, helper_t *helper);
 int _strcmp(char *s1, char *s2);
 env_t *getEnvPtr(char *name, env_t *head);
 char **getArgs(char *tok, char *argv[], char *save);
@@ -55,4 +68,6 @@ int cdBuiltin(char *save, env_t *head);
 env_t *setEnvPtr(char *envname, char *value, env_t *head);
 char *str_concat(char *s1, char *s2);
 int _atoi(char *s);
+int itoa(int n, char *s);
+int _abs(int num);
 #endif

@@ -1,0 +1,34 @@
+typedef struct builtin_s
+{
+	char *name;
+	int (*f)();
+} builtin_t;
+
+typedef struct helper_s
+{
+	env_t *env;
+	char *buf;
+	int total;
+	int bufsize;
+} helper_t;
+
+builtin_t table[] = {
+	{"cd", cdBuiltin}, {"exit", exitBuiltin}, {"unsetenv", unsetEnv},
+	{"env", listEnv}, {"setenv", setEnvPtr}, {NULL, NULL}
+};
+
+int i;
+
+i = 0;
+while (table[i]->name != *name && table[i]->name != NULL) 
+{
+	i++;
+}
+tablename = table[i]->name;
+if (tablename = NULL)
+	return (NULL);	
+else if 
+	table[i]->name
+
+/*add help, history, maybe add alias and unaliases?*/
+

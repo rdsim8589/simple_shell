@@ -49,7 +49,6 @@ env_t *initEnvList(char **environ, env_t **head)
 	return (*head);
 }
 
-
 /**
  * buildEnv - builds a 2d array from our linked list so we can send
  * it to our child processes

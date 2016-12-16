@@ -13,7 +13,8 @@ int main(int argc, char *argv[], char*env[])
 	char *save, *tok, *inp, **args;
 	char delim = ' ';
 	env_t *head;
-	int file;
+	helper_t *helper;
+	int file, cstatus;
 
 	head = NULL;
 	if (argc == 1)
@@ -35,16 +36,17 @@ int main(int argc, char *argv[], char*env[])
 	(void) argc; /* need to use this to check to check for scripts later!*/
 	signal(SIGINT, SIG_IGN); /* Ignore any SIGINT (ctrl-c) signal */
 	initEnvList(env, &head);
+	helper = initHelper(head);
 	while (1)
 	{
 		if (argc == 1)
 		    prompt();
-		inp = get_line(file);
+		inp = get_line(file, helper);
 		args = NULL;
-	        while (inp != NULL)
+		while (inp != NULL)
 		{
 			tok = splitstr(inp, &delim, &save);
-			if (checkBuiltins(inp, save, &head) == 0)
+			if (checkBuiltins(inp, save, &head, helper) == 0)
 			{
 				if (tok[0] == '.' && tok[1] == '/')
 				{
@@ -67,7 +69,7 @@ int main(int argc, char *argv[], char*env[])
 						_putstring(tok); _putstring(": command not found.\n");
 					}
 			}
-			inp = get_line(file);
+			inp = get_line(file, helper);
 			save = NULL;
 		}
 		if (inp == NULL && argc == 2)
@@ -78,6 +80,24 @@ int main(int argc, char *argv[], char*env[])
 		}
 	}
 }
+
+helper_t *initHelper(env_t *env)
+{
+	helper_t *helper;
+
+	helper = malloc(sizeof(helper_t));
+	helper->env = env;
+	helper->printed = malloc(sizeof(int) * 1);
+	*(helper->printed) = 0;
+	helper->total = malloc(sizeof(int) * 1);
+	*(helper->total) = 0;
+	helper->bufsize = 0;
+	helper->last = malloc(sizeof(int) * 1);
+	*(helper->last) = 0;
+
+	return helper;
+}
+
 
 /**
  * checkPath - checks to see if a program is located in $PATH
