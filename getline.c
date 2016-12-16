@@ -35,7 +35,8 @@ char *get_line(int file, helper_t *helper)
 			*total += readval; /*add the readval to the total we've read*/
 			i++;
 		}
-		add_hist(*total + 1, hist_head, buf);
+		if (buf[0] != '\0')
+			add_hist(*total + 1, hist_head, buf);
 		bufhead = buf; /*bufhead is a ptr to the beginning of the buffer*/
 	}
 	else
@@ -84,6 +85,9 @@ char *get_line(int file, helper_t *helper)
 		buf = newbuf;
 		bufhead = newbuf;
 	}
+	buf = parseWhitespace(buf);
+	if (*last == *total && buf[0] == '\0')
+		return (NULL);
 	return (buf); /* return buf */
 }
 
@@ -125,10 +129,14 @@ char *parseDollar(char *buf, helper_t *helper)
 			if (envname == NULL)
 			{
 				newbuf = malloc(*total);
+				memset(newbuf, '\0', *total);
 				_memcpy(newbuf, buf, start - 1);
-				_memcpy(newbuf + start - 1, buf + (start + _strlen(name) + 1), *total - (_strlen(name) + _strlen(value)));
+				_memcpy(newbuf + start - 1, buf + start + _strlen(name), *total);
 				free(buf);
-				return (newbuf);
+				buf = newbuf;
+				*(helper->last) -= _strlen(name) + 1;
+				free(name);
+				return (buf);
 			}
 			else
 			{
@@ -155,6 +163,23 @@ char *parseDollar(char *buf, helper_t *helper)
 			start = 0;
 		}
 		i++;
+	}
+	return (buf);
+}
+
+char *parseWhitespace(char *buf)
+{
+	int length;
+	while (buf[0] == ' ')
+		buf++;
+	length = _strlen(buf);
+	if (length != 0)
+	{
+		while (buf[length - 1] == ' ')
+		{
+			buf[length - 1] = '\0';
+			length = _strlen(buf);
+		}
 	}
 	return (buf);
 }

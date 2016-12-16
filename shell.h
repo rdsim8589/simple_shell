@@ -74,7 +74,7 @@ void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
 /* getline.c prototype */
 char *get_line(int file, helper_t *helper);
 char *parseDollar(char *buf, helper_t *helper);
-
+char *parseWhitespace(char *buf);
 
 /* envlist.c prototypes */
 env_t *initEnvList(char **environ, env_t **head);

@@ -70,7 +70,8 @@ int main(int argc, char *argv[], char *env[])
 					cstatus = checkPath(tok, args, save, head);
 				if (cstatus == 0)
 				{
-					_putstring(tok); _putstring(": command not found.\n");
+					_putstring(tok);
+					_putstring(": command not found.\n");
 				}
 			}
 			inp = get_line(file, helper);
@@ -123,6 +124,8 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head)
 
 	if (getEnvPtr("PATH", head) != NULL)
 	{
+		if (inp == NULL || inp[0] == '\0')
+			return (-1);
 		j = 0;
 		paths = _strdup((getEnvPtr("PATH", head))->value); /* tmp to avoid mangling env */
 		tok = splitstr(paths, &colon, &pathsave);

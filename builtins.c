@@ -103,6 +103,7 @@ void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper)
 	int i;
 
 	free(inp);
+	clear_hist(&(helper->hist_head));
 	free_list(*environ);
 	free(helper->printed);
 	free(helper->total);
