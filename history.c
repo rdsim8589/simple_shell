@@ -2,7 +2,7 @@
 /**
  * add_hist - adds the user entry to hist linked list
  * @total: size of the num of bytes to copy
- * @head: a pointer to the head of hist linked list
+n * @head: a pointer to the head of hist linked list
  * @buf: a pointer to the string of chars to be copied
  */
 
@@ -70,7 +70,11 @@ void print_hist(hist_t *hist_head)
 		i++;
 	}
 }
-
+/**
+ * push_hist - push the historyfrom the current sessions into HIST_FILE
+ * @hist_head: the head to the hist link list
+ * @head: the head to the environment linked list
+ */
 void push_hist(hist_t *hist_head, env_t *head)
 {
 	mode_t mode;
@@ -119,14 +123,18 @@ void push_hist(hist_t *hist_head, env_t *head)
 		exit(104);
 	}
 }
+/**
+ * pull_hist - pulls entries from history and added it to hist linked list.
+ * the linked list will only store up to 4096 lines
+ * @hist_head: pointer to the head of the hist linked list
+ * @head: the head of the enviroment linked list
+ */
 
-
-
-hist_t *pull_hist(hist_t **hist_head, env_t *head)
+void pull_hist(hist_t **hist_head, env_t *head)
 {
 	char *home, *hist_line, delim, *saveptr;
 	env_t *env_var;
-	hist_t *hist_head;
+	hist_t *hist_head, *current_node;
 	int file, err_r, err_c, buf_len, i;
 
 	/* get the home and concat with the history direct */
@@ -141,7 +149,8 @@ hist_t *pull_hist(hist_t **hist_head, env_t *head)
 		_putstring("unable to open hist file");
 		pppppreturn(NULL);
 	}
-	buf_len = _strlen(buff);
+	/* malloc out space for the buf */
+	buf_len = _strlen(buf);
 	err_r = read(file, buf, buf_len);
 	delim = '\n';
 	i = 1;
@@ -151,15 +160,14 @@ hist_t *pull_hist(hist_t **hist_head, env_t *head)
 		/* if the counter is greater than 4096 remove the head node of history  */
 		if (i > 4096)
 		{
-			temphisthead = histhead->next;
-			free(histhead-value);
-			free(histhead);
-			histhead = temphisthead;
+			current_node = *hist_head;
+			*hist_head = (*hist_head)->next;
+			free(current_node->value);
+			free(current_node);
 		}
 		/* add to the end of the history of the linked list */
-		add_hist(_strlen(hist_line), &hist_head, char *buf)
+		add_hist(_strlen(hist_line), &hist_head, hist_line)
 		i++;
 	}
-	/* return the ead of hist */
-	addnode(hbawdihadwai);
+	/* free buf */
 }
