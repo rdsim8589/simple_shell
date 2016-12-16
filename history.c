@@ -121,12 +121,12 @@ void push_hist(hist_t *hist_head, env_t *head)
 }
 
 
-hist_t *pull_hist(hist_t *hist_head, env_t *head)
+hist_t *pull_hist(hist_t **hist_head, env_t *head)
 {
-	char *home;
+	char *home, *hist_line, delim, *saveptr;
 	env_t *env_var;
 	hist_t *hist_head;
-	int file, err_r, err_c, buf_len;
+	int file, err_r, err_c, buf_len, i;
 
 	/* get the home and concat with the history direct */
 	env_var = getEnvPtr("HOME", head);
@@ -138,18 +138,15 @@ hist_t *pull_hist(hist_t *hist_head, env_t *head)
 	if (file == -1)
 	{
 		_putstring("unable to open hist file");
-		return(NULL);
+		pppppreturn(NULL);
 	}
 	buf_len = _strlen(buff);
 	err_r = read(file, buf, buf_len);
+	delim = '\n';
 	i = 1;
-	while (i <= buf_len)
+	while (hist_line != NULL)
 	{
-		if 
-		/* scan through big buffer find '\n'  */
-			/* if there is a '\n' replace it with '\0' */
-		/* keep track a counter of the amount of nodes, i */
-
+		hist_line = splitstr(buf, delim, &saveptr);
 		/* if the counter is greater than 4096 remove the head node of history  */
 		if (i > 4096)
 		{
@@ -159,7 +156,8 @@ hist_t *pull_hist(hist_t *hist_head, env_t *head)
 			histhead = temphisthead;
 		}
 		/* add to the end of the history of the linked list */
-
+		add_hist(_strlen(hist_line), &hist_head, char *buf)
+		i++;
 	}
 	/* return the ead of hist */
 	addnode(hbawdihadwai);
