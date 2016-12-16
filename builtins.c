@@ -64,7 +64,9 @@ int checkBuiltins(char *inp, char *save, env_t **environ, helper_t *helper)
 	int i;
 	char *value, *tok;
 	char delim = ' ';
+	hist_t *hist_head;
 
+	hist_head = helper->hist_head;
 	if (allstrcmp(inp, "env") == 0) /*if the first word is env, run env*/
 	{
 		listEnv(environ);
@@ -86,7 +88,7 @@ int checkBuiltins(char *inp, char *save, env_t **environ, helper_t *helper)
 		unsetEnv(tok, environ);
 	}
 	else if (allstrcmp(inp, "history") == 0)
-		_putstring("Run history");
+		print_hist(hist_head);
 	else if (allstrcmp(inp, "cd") == 0)
 		cdBuiltin(save, *environ);
 	else if (allstrcmp(inp, "help") == 0)
@@ -139,7 +141,8 @@ int listEnv(env_t **environ)
  * getEnvPtr - gets a pointer to a matching environment variable
  *
  * @name: name of environment variable to search for
- * Return: returns a pointer to the variable, or NULL if none found
+ * @head: the head of the env linked list
+ * Return: returns a pointer to the environment variable, or NULL if none found
  */
 env_t *getEnvPtr(char *name, env_t *head)
 {

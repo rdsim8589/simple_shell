@@ -15,7 +15,9 @@ int main(int argc, char *argv[], char*env[])
 	env_t *head;
 	helper_t *helper;
 	int file, cstatus;
+	hist_t *hist_head;
 
+	hist_head = NULL;
 	head = NULL;
 	if (argc == 1)
 		file = STDIN_FILENO;
@@ -36,7 +38,8 @@ int main(int argc, char *argv[], char*env[])
 	(void) argc; /* need to use this to check to check for scripts later!*/
 	signal(SIGINT, SIG_IGN); /* Ignore any SIGINT (ctrl-c) signal */
 	initEnvList(env, &head);
-	helper = initHelper(head);
+	helper = initHelper(head, hist_head);
+	/* grab the history file and populate the hist linked list */
 	while (1)
 	{
 		if (argc == 1)
@@ -81,12 +84,14 @@ int main(int argc, char *argv[], char*env[])
 	}
 }
 
-helper_t *initHelper(env_t *env)
+helper_t *initHelper(env_t *env, hist_t *hist_head)
 {
 	helper_t *helper;
 
 	helper = malloc(sizeof(helper_t));
 	helper->env = env;
+	helper->hist_head = hist_head;
+	hist_head = NULL;
 	helper->printed = malloc(sizeof(int) * 1);
 	*(helper->printed) = 0;
 	helper->total = malloc(sizeof(int) * 1);
