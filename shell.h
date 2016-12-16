@@ -18,6 +18,7 @@ extern char **environ;
 #define ANSI_COLOR_CYAN    "\x1b[36m"
 #define ANSI_COLOR_RESET   "\x1b[0m"
 #define HIST_FILE ".simple_shell_history"
+
 /**
  * struct env_s - a singly linked list
  * @name:
@@ -32,6 +33,7 @@ typedef struct env_s
 	char *value;
 	struct env_s *next;
 } env_t;
+
 /**
  * struct hist_s - a singly linked list
  * @name:
@@ -46,11 +48,26 @@ typedef struct hist_s
 	struct hist_s *next;
 } hist_t;
 
+typedef struct helper_s
+{
+	hist_t *hist_head;
+	env_t *env;
+	int *total;
+	int *bufsize;
+	int *printed;
+	int *last;
+} helper_t;
+
+helper_t *initHelper(env_t *env, hist_t *hist_head);
+void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper);
+char *parseDollar(char *buf, helper_t *helper);
+int listEnv(env_t **environ);
+char *_memcpy(char *dest, char *src, unsigned int n);
+char *get_line(int file, helper_t *helper);
 /* mem.c prototypes */
 char *_memcpy(char *dest, char *src, unsigned int n);
 void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
 /* getline.c prototype */
-char *get_line(int file, hist_t **hist_head);
 char **buildEnv(env_t *head, int *envsize);
 env_t *addEnv(env_t **head, char *name, char *value);
 void free_list(env_t *head);
@@ -69,7 +86,8 @@ char *dir_concat(char *s1, char *s2);
 void addHistory(char **history, char *command);
 char *trim(char *string, int count);
 char *_strdup(char *str);
-int checkBuiltins(char *inp, char *save, env_t **environ, hist_t **hist_head);
+void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
+int checkBuiltins(char *tok, char *save, env_t **head, helper_t *helper);
 int _strcmp(char *s1, char *s2);
 env_t *getEnvPtr(char *name, env_t *head);
 char **getArgs(char *tok, char *argv[], char *save);
@@ -78,6 +96,8 @@ int cdBuiltin(char *save, env_t *head);
 env_t *setEnvPtr(char *envname, char *value, env_t *head);
 char *str_concat(char *s1, char *s2);
 int _atoi(char *s);
+int itoa(int n, char *s);
+int _abs(int num);
 /* history.c prototypes*/
 hist_t *add_hist(int total, hist_t **hist_head, char *buf);
 void clear_hist(hist_t **hist_head);

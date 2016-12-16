@@ -37,7 +37,6 @@ char *splitstr(char *str, const char *delim, char **saveptr)
 	return (tok); /* return a pointer to our new token */
 }
 
-
 /**
  * allstrcmp - compares two strings, INCLUDING null terminator!
  *
