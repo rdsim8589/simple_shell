@@ -36,8 +36,7 @@ typedef struct env_s
 
 /**
  * struct hist_s - a singly linked list
- * @name:
- * @value:
+ * @entry:
  * @next:
  *
  * Description:
@@ -48,6 +47,17 @@ typedef struct hist_s
 	struct hist_s *next;
 } hist_t;
 
+/**
+ * struct helper_s - a singly linked list
+ * @hist_head:
+ * @env:
+ * @total:
+ * @bufsize:
+ * @printed:
+ * @last:
+ *
+ * Description:
+ */
 typedef struct helper_s
 {
 	hist_t *hist_head;
