@@ -37,7 +37,8 @@ int main(int argc, char *argv[], char*env[])
 	(void) argc; /* need to use this to check to check for scripts later!*/
 	signal(SIGINT, SIG_IGN); /* Ignore any SIGINT (ctrl-c) signal */
 	initEnvList(env, &head);
-	/* grab the history file and populate the hist linked list */
+	/* grab the history file and populate the hist linked list */	
+	pull_hist(&hist_head, head);
 	while (1)
 	{
 		if (argc == 1)
