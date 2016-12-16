@@ -108,6 +108,7 @@ void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper)
 	free(helper->printed);
 	free(helper->total);
 	free(helper->last);
+	free(helper->bufsize);
 	free(helper);
 	if (tok != NULL)
 		i = atoi(tok); /*atoi if there's an arg so we can exit w/ different statuses*/

@@ -75,6 +75,9 @@ void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
 char *get_line(int file, helper_t *helper);
 char *parseDollar(char *buf, helper_t *helper);
 char *parseWhitespace(char *buf);
+char *innerCat(char *buf, char *string, int *bufsize, int insert);
+char *sliceString(char *buf, int *bufsize, int slicesize, int index);
+char *expandBuffer(char *buf, int bufsize, int newsize);
 
 /* envlist.c prototypes */
 env_t *initEnvList(char **environ, env_t **head);
