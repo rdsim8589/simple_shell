@@ -12,8 +12,8 @@ char *get_line(int file, helper_t *helper)
 	last = helper->last;
 	total = helper->total;
 	printed = helper->printed;
-
 	hist_head = &helper->hist_head;
+
 	if (*total == 0)
 	{
 		*printed = 0; /* printed holds a count of what we've sent out*/
@@ -33,15 +33,14 @@ char *get_line(int file, helper_t *helper)
 			readval = read(STDIN_FILENO, buf + (bufsize), 1024); /*read more*/
 			*total += readval; /*add the readval to the total we've read*/
 			i++;
-			add_hist(*total, hist_head, buf);
 		}
+		add_hist(*total + 1, hist_head, buf);
 		bufhead = buf; /*bufhead is a ptr to the beginning of the buffer*/
 	}
 	else
 	{
 		buf += *last; /*if this isn't the first time around, advance buf ptr*/
 	}
-	_putchar(*total + '0');
 	if (buf[0] == ';')
 	{
 		buf += 1;
