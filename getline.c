@@ -2,13 +2,14 @@
 
 char *get_line(int file, helper_t *helper)
 {
-	char *line, *newbuf;
+	char *newbuf;
 	int readval, i, bufsize;
 	hist_t **hist_head;
 	static int *total;
 	static int *printed;
 	static int *last;
 	static char *buf, *bufhead;
+
 	last = helper->last;
 	total = helper->total;
 	printed = helper->printed;
@@ -44,7 +45,6 @@ char *get_line(int file, helper_t *helper)
 	if (buf[0] == ';')
 	{
 		buf += 1;
-		*printed++;
 	}
 	if (*printed >= *total || buf[0] == '\n' || buf[0] == '\0') /*if this is true, we're done with this buffer*/
 	{
@@ -85,4 +85,76 @@ char *get_line(int file, helper_t *helper)
 		bufhead = newbuf;
 	}
 	return (buf); /* return buf */
+}
+
+char *parseDollar(char *buf, helper_t *helper)
+{
+	char *name;
+	char *newbuf;
+	char *value;
+	env_t *envname;
+	int i, j, k, start, size;
+	env_t *env;
+	int *total;
+
+	start = 0;
+	env = helper->env;
+	i = 0;
+	total = helper->total;
+	while (i < _strlen(buf))
+	{
+		if (buf[i] == '$')
+		{
+			start = i + 1;
+			j = 0;
+			i++;
+			while (buf[i] != ' ' && buf[i] != '\n' && buf[i] != '\0' && buf[i] != '$')
+			{
+				i++;
+				j++;
+			}
+			name = malloc((j + 1) * (sizeof(char)));
+			j = 0;
+			k = start;
+			while (k != i)
+			{
+				name[j++] = buf[k++];
+			}
+			name[j] = '\0';
+			envname = getEnvPtr(name, env);
+			if (envname == NULL)
+			{
+				newbuf = malloc(*total);
+				_memcpy(newbuf, buf, start - 1);
+				_memcpy(newbuf + start - 1, buf + (start + _strlen(name) + 1), *total - (_strlen(name) + _strlen(value)));
+				free(buf);
+				return (newbuf);
+			}
+			else
+			{
+				value = envname->value;
+				size = *total + _strlen(value) + 1000;
+				newbuf = malloc(size);
+				if (start - 1 > 0)
+				{
+					_memcpy(newbuf, buf, start - 1);
+					_memcpy(newbuf + (start - 1), value, _strlen(value) + 1);
+				}
+				else
+					_memcpy(newbuf + (start - 1), value, _strlen(value) + 1);
+				_memcpy(newbuf + (start - 1) + _strlen(value), buf + (start) + _strlen(name), *total);
+				free(buf);
+				buf = newbuf;
+				*(helper->last) += (_strlen(value) - _strlen(name) - 1);
+			}
+			free(name);
+		}
+		if (start != 0)
+		{
+			i = start;
+			start = 0;
+		}
+		i++;
+	}
+	return (buf);
 }

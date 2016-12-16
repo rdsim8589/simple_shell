@@ -58,46 +58,61 @@ typedef struct helper_s
 	int *last;
 } helper_t;
 
-helper_t *initHelper(env_t *env, hist_t *hist_head);
+
+/* builtins */
 void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper);
-char *parseDollar(char *buf, helper_t *helper);
 int listEnv(env_t **environ);
-char *_memcpy(char *dest, char *src, unsigned int n);
-char *get_line(int file, helper_t *helper);
+int cdBuiltin(char *save, env_t *head);
+int checkBuiltins(char *tok, char *save, env_t **head, helper_t *helper);
+int unsetEnv(char *name, env_t **head);
+env_t *setEnvPtr(char *envname, char *value, env_t *head);
+
 /* mem.c prototypes */
 char *_memcpy(char *dest, char *src, unsigned int n);
 void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
+
 /* getline.c prototype */
-char **buildEnv(env_t *head, int *envsize);
-env_t *addEnv(env_t **head, char *name, char *value);
-void free_list(env_t *head);
+char *get_line(int file, helper_t *helper);
+char *parseDollar(char *buf, helper_t *helper);
+
+
+/* envlist.c prototypes */
 env_t *initEnvList(char **environ, env_t **head);
+char **buildEnv(env_t *head, int *envsize);
+void free_list(env_t *head);
+env_t *addEnv(env_t **head, char *name, char *value);
+env_t *getEnvPtr(char *name, env_t *head);
+
+
+/* main.c prototypes */
+helper_t *initHelper(env_t *env, hist_t *hist_head);
 int checkPath(char *inp, char *argv[], char *save, env_t *head);
-int _putchar(char c);
-int unsetEnv(char *name, env_t **head);
-void _putstring(char *str);
+void freeArgs(char **args, int envsize);
+char **getArgs(char *tok, char *argv[], char *save);
 int runProg(char *name, char *argv[], env_t *head);
-char *splitstr(char *str, const char *delim, char **saveptr);
-int allstrcmp(char *s1, char *s2);
-void prompt(void);
+
+/* stringlib.c prototypes */
 int _strlen(char *s);
 char *_strcpy(char *dest, char *src);
-char *dir_concat(char *s1, char *s2);
-void addHistory(char **history, char *command);
-char *trim(char *string, int count);
 char *_strdup(char *str);
-void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
-int checkBuiltins(char *tok, char *save, env_t **head, helper_t *helper);
-int _strcmp(char *s1, char *s2);
-env_t *getEnvPtr(char *name, env_t *head);
-char **getArgs(char *tok, char *argv[], char *save);
-void freeArgs(char **args, int envsize);
-int cdBuiltin(char *save, env_t *head);
-env_t *setEnvPtr(char *envname, char *value, env_t *head);
 char *str_concat(char *s1, char *s2);
+int _strcmp(char *s1, char *s2);
+
+/* specialstrings.c prototypes */
+char *splitstr(char *str, const char *delim, char **saveptr);
+int allstrcmp(char *s1, char *s2);
+char *dir_concat(char *s1, char *s2);
 int _atoi(char *s);
+
+/* io.c prototypes */
+void prompt(void);
+void _putstring(char *str);
+int _putchar(char c);
+
+/* math.c prototypes */
 int itoa(int n, char *s);
 int _abs(int num);
+
 /* history.c prototypes*/
 hist_t *add_hist(int total, hist_t **hist_head, char *buf);
 void clear_hist(hist_t **hist_head);

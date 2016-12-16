@@ -8,7 +8,7 @@
  * @argv: arguments passed
  * Return: return values in man page
  */
-int main(int argc, char *argv[], char*env[])
+int main(int argc, char *argv[], char *env[])
 {
 	char *save, *tok, *inp, **args;
 	char delim = ' ';
@@ -23,7 +23,7 @@ int main(int argc, char *argv[], char*env[])
 		file = STDIN_FILENO;
 	else if (argc == 2)
 	{
-       		file = open(argv[1], O_RDONLY);
+		file = open(argv[1], O_RDONLY);
 		if (file == -1)
 		{
 			_putstring("Error opening file.");
@@ -43,7 +43,7 @@ int main(int argc, char *argv[], char*env[])
 	while (1)
 	{
 		if (argc == 1)
-		    prompt();
+			prompt();
 		inp = get_line(file, helper);
 		args = NULL;
 		while (inp != NULL)
@@ -57,7 +57,7 @@ int main(int argc, char *argv[], char*env[])
 					if (access(tok, X_OK) == 0)
 					{
 						args = getArgs(tok, argv, save);
-						runProg(tok, args, head);
+						cstatus = runProg(tok, args, head);
 					}
 					else
 					{
@@ -67,10 +67,11 @@ int main(int argc, char *argv[], char*env[])
 					}
 				}
 				else
-					if (checkPath(tok, args, save, head) == 0)
-					{
-						_putstring(tok); _putstring(": command not found.\n");
-					}
+					cstatus = checkPath(tok, args, save, head);
+				if (cstatus == 0)
+				{
+					_putstring(tok); _putstring(": command not found.\n");
+				}
 			}
 			inp = get_line(file, helper);
 			save = NULL;
@@ -100,7 +101,7 @@ helper_t *initHelper(env_t *env, hist_t *hist_head)
 	helper->last = malloc(sizeof(int) * 1);
 	*(helper->last) = 0;
 
-	return helper;
+	return (helper);
 }
 
 

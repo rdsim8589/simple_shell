@@ -61,7 +61,6 @@ int cdBuiltin(char *save, env_t *head)
  */
 int checkBuiltins(char *inp, char *save, env_t **environ, helper_t *helper)
 {
-	int i;
 	char *value, *tok;
 	char delim = ' ';
 	hist_t *hist_head;
@@ -135,27 +134,6 @@ int listEnv(env_t **environ)
 		walk = walk->next;
 	}
 	return (1);
-}
-
-/**
- * getEnvPtr - gets a pointer to a matching environment variable
- *
- * @name: name of environment variable to search for
- * @head: the head of the env linked list
- * Return: returns a pointer to the environment variable, or NULL if none found
- */
-env_t *getEnvPtr(char *name, env_t *head)
-{
-	env_t *environ;
-
-	environ = head;
-	while (environ != NULL)
-	{
-		if (allstrcmp(name, environ->name) == 0)
-			return (environ);
-		environ = environ->next;
-	}
-	return (NULL);
 }
 
 /**
@@ -234,9 +212,9 @@ env_t *setEnvPtr(char *envname, char *value, env_t *head)
 	if (environ != NULL)
 	{
 		newvalue = _strdup(value);
-		free (environ->value);
+		free(environ->value);
 		environ->value = newvalue;
-		return(environ);
+		return (environ);
 	}
 	return (addEnv(&head, envname, value)); /*return the result*/
 }
