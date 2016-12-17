@@ -38,6 +38,7 @@ int main(int argc, char *argv[], char *env[])
 	(void) argc; /* need to use this to check to check for scripts later!*/
 	signal(SIGINT, SIG_IGN); /* Ignore any SIGINT (ctrl-c) signal */
 	initEnvList(env, &head);
+	hist_head = pull_hist(&hist_head, head);
 	helper = initHelper(head, hist_head);
 	/* grab the history file and populate the hist linked list */
 	while (1)
@@ -93,7 +94,6 @@ helper_t *initHelper(env_t *env, hist_t *hist_head)
 	helper = malloc(sizeof(helper_t));
 	helper->env = env;
 	helper->hist_head = hist_head;
-	hist_head = NULL;
 	helper->printed = malloc(sizeof(int) * 1);
 	*(helper->printed) = 0;
 	helper->total = malloc(sizeof(int) * 1);
@@ -204,7 +204,7 @@ char **getArgs(char *tok, char *argv[], char *save)
  * Currently this just allocates space out for 100 pntrs, that's... a lot
  */
 	(void) argv;
-	args = malloc(sizeof(char *) * 1000);
+	args = malloc(sizeof(char *) * 10000);
 	arg = NULL;
 	args[0] = tok;
 	arg = splitstr(NULL, &delim, &save);
