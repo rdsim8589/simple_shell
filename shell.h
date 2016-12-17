@@ -112,7 +112,7 @@ int _atoi(char *s);
 void prompt(void);
 void _putstring(char *str);
 int _putchar(char c);
-
+void _putint(int i, int flag);
 /* math.c prototypes */
 int itoa(int n, char *s);
 int _abs(int num);
