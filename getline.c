@@ -18,24 +18,36 @@ char *get_line(int file, helper_t *helper)
 
 	if (*total == 0)
 	{
+		*bufsize = 1024;
 		*printed = 0; /* printed holds a count of what we've sent out*/
 		buf = malloc(sizeof(char) * *bufsize);
 		memset(buf, '\0', *bufsize);
-		readval = read(file, buf, 1024);
-		*total = readval; /*total is the total we've read, static*/
-		while (readval >= 1024) /*if we read 1024, there's more in stdin*/
+		readval = read(file, buf, *bufsize);
+		if (readval == -1)
 		{
-			newbuf = malloc((*bufsize + 1024) * sizeof(char)); /*ghetto realloc*/
-			memset(newbuf, '\0', *bufsize + 1024);
+			_putstring("unable to read from STDIN_FILENO\n");
+			return (NULL);
+		}
+		*total = readval; /*total is the total we've read, static*/
+		while (readval == 1024) /*if we read 1024, there's more in stdin*/
+		{
+			_putstring("expand");
+			newbuf = malloc((*bufsize * 2) * sizeof(char)); /*ghetto realloc*/
+			memset(newbuf, '\0', *bufsize * 2);
 			_memcpy(newbuf, buf, *bufsize);
 			free(buf);
 			buf = newbuf;
 			readval = read(STDIN_FILENO, buf + *bufsize, 1024); /*read more*/
+			if (readval == -1)
+			{
+				_putstring("unable to read from STDIN_FILENO past 1024 bytes\n");
+				return (NULL);
+			}
 			*total += readval; /*add the readval to the total we've read*/
-			*bufsize += 1024;
+			*bufsize *= 2;
 		}
 		if (buf[0] != '\0')
-			add_hist(*total + 1, hist_head, buf);
+			add_hist(*total, hist_head, buf);
 		bufhead = buf; /*bufhead is a ptr to the beginning of the buffer*/
 	}
 	else
