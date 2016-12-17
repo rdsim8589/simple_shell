@@ -102,7 +102,6 @@ void push_hist(hist_t *hist_head, env_t *head)
 		free(home);
 		exit(101);
 	}
-
 	while (hist_head != NULL)
 	{
 		if (hist_head->entry)
