@@ -44,3 +44,21 @@ int _putchar(char c)
 {
 	return (write(1, &c, 1));
 }
+/**
+ * _putint - prints out an int
+ * @i: an int
+ * @flag: set flag to 0. To account for i == 0
+ *
+ */
+void _putint(int i, int flag)
+{
+	if (i != 0)
+	{
+		_putint(i / 10, 1);
+		_putchar(i % 10 + '0');
+	}
+	else if (i == 0 && flag == 0)
+	{
+		_putchar('0');
+	}
+}
