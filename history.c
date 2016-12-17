@@ -65,10 +65,11 @@ void print_hist(hist_t *hist_head)
 {
 	int i;
 
+
 	i = 0;
 	while (hist_head != NULL)
 	{
-		_putchar(i + '0');
+		_putint(i, 0);
 		_putchar(' ');
 		_putstring(hist_head->entry);
 		_putchar('\n');
