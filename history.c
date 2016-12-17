@@ -191,7 +191,6 @@ hist_t *pull_hist(hist_t **hist_head, env_t *head)
 		hist_line = splitstr(NULL, &delim, &saveptr);
 		i++;
 	}
-	print_hist(*hist_head);
 	err_c = close(file);
 	if (err_c == -1)
 	{
