@@ -53,7 +53,7 @@ typedef struct helper_s
 {
 	hist_t *hist_head;
 	env_t *env;
-	int *total;
+	long *total;
 	int *bufsize;
 	int *printed;
 	int *last;
