@@ -1,4 +1,4 @@
-#include "shell.h"
+ #include "shell.h"
 
 /**
  * cdBuiltin - function to execute the builtin CD command
@@ -73,6 +73,7 @@ int checkBuiltins(char *inp, char *save, env_t **environ, helper_t *helper)
 	else if (allstrcmp(inp, "exit") == 0) /* probably split this into a dif func*/
 	{
 		tok = splitstr(NULL, &delim, &save);
+		push_hist(helper->hist_head, helper->env);
 		exitBuiltin(tok, inp, environ, helper);
 	}
 	else if (allstrcmp(inp, "setenv") == 0) /*setenv*/
