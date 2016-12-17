@@ -8,8 +8,8 @@ n * @head: a pointer to the head of hist linked list
 
 hist_t *add_hist(int total, hist_t **hist_head, char *buf)
 {
-	hist_t *new_hist;
-	hist_t *current;
+	hist_t *new_hist, *current;
+	int i;
 
 	if (buf[0] == ' ')
 	{
@@ -20,6 +20,12 @@ hist_t *add_hist(int total, hist_t **hist_head, char *buf)
 		return (NULL);
 	new_hist->entry = malloc(sizeof(char) * total);
 	_memcpy(new_hist->entry, buf, total);
+
+	for (i = 0; i <= total - 1; i++)
+	{
+		if ((new_hist->entry)[i] == '\n')
+			(new_hist->entry)[i] = '\0';
+	}
 	new_hist->next = NULL;
 
 	if (*hist_head == NULL)
@@ -130,12 +136,13 @@ void push_hist(hist_t *hist_head, env_t *head)
  * @head: the head of the enviroment linked list
  */
 
-void pull_hist(hist_t **hist_head, env_t *head)
+hist_t *pull_hist(hist_t **hist_head, env_t *head)
 {
-	char *home, *hist_line, delim, *saveptr;
+	char *home, *hist_line, delim, *saveptr, *buf;
 	env_t *env_var;
-	hist_t *hist_head, *current_node;
-	int file, err_r, err_c, buf_len, i;
+	hist_t *current_node;
+	int file, err_c, err_r, buf_len, i;
+	struct stat st;
 
 	/* get the home and concat with the history direct */
 	env_var = getEnvPtr("HOME", head);
@@ -147,27 +154,52 @@ void pull_hist(hist_t **hist_head, env_t *head)
 	if (file == -1)
 	{
 		_putstring("unable to open hist file");
-		pppppreturn(NULL);
+		exit(300);
 	}
-	/* malloc out space for the buf */
-	buf_len = _strlen(buf);
+	/* using stat struct to get file size */
+	if (stat(home, &st) == 0)
+	{
+		buf_len = st.st_size;
+	}
+	else
+	{
+		_putstring("failed to get count of hist_file");
+		exit(301);
+	}
+	buf = malloc(sizeof(char) * buf_len);
 	err_r = read(file, buf, buf_len);
+	if (err_r == -1)
+	{
+		_putstring("unable to read hist_file");
+	}
+	buf[buf_len-1] = '\0';
 	delim = '\n';
 	i = 1;
+	hist_line = splitstr(buf, &delim, &saveptr);
 	while (hist_line != NULL)
 	{
-		hist_line = splitstr(buf, delim, &saveptr);
+		add_hist(_strlen(hist_line) + 1, hist_head, hist_line);
 		/* if the counter is greater than 4096 remove the head node of history  */
 		if (i > 4096)
 		{
 			current_node = *hist_head;
 			*hist_head = (*hist_head)->next;
-			free(current_node->value);
+			free(current_node->entry);
 			free(current_node);
 		}
 		/* add to the end of the history of the linked list */
-		add_hist(_strlen(hist_line), &hist_head, hist_line)
+		hist_line = splitstr(NULL, &delim, &saveptr);
 		i++;
 	}
+	print_hist(*hist_head);
+	err_c = close(file);
+	if (err_c == -1)
+	{
+		_putstring("fail to close hist_file");
+		exit(302);
+	}
 	/* free buf */
+	free(buf);
+	free(home);
+	return (*hist_head);
 }
