@@ -23,7 +23,7 @@ char *splitstr(char *str, const char *delim, char **saveptr)
 	}
 	i = 0;
 	tok = str; /* tok will start where str starts now */
-	while (*str != '\0' && *str != *delim) /* move forward to a delim or null */
+	while (*str != '\0' && *str != EOF && *str != *delim) /* move forward to a delim or null */
 	{
 		str++; /* we could check here for additional delims each time we rotate! */
 		i++; /* for multiple delim setup (when we want to use ;, etc) */
