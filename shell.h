@@ -6,6 +6,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 extern char **environ;
 #define BUFSIZE 1024
 #define ARGS 256
@@ -121,4 +122,5 @@ hist_t *add_hist(int total, hist_t **hist_head, char *buf);
 void clear_hist(hist_t **hist_head);
 void print_hist(hist_t *hist_head);
 void push_hist(hist_t *hist_head, env_t *head);
+hist_t *pull_hist(hist_t **hist_head, env_t *head);
 #endif
