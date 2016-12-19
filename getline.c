@@ -40,7 +40,7 @@ char *get_line(int file, helper_t *helper)
 			*bufsize += 1024;
 		}
 		if (buf[0] != '\0')
-			add_hist(*total + 1, hist_head, buf);
+			add_hist(*total, hist_head, buf);
 		bufhead = buf; /*bufhead is a ptr to the beginning of the buffer*/
 	}
 	else
