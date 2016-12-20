@@ -16,6 +16,7 @@ int main(int argc, char *argv[], char *env[])
 	helper_t *helper;
 	int file, cstatus, type;
 	hist_t *hist_head;
+	struct stat st;
 
 	hist_head = NULL;
 	head = NULL;
@@ -57,7 +58,8 @@ int main(int argc, char *argv[], char *env[])
 				{
 					if (tok[0] == '.')
 						tok = tok + 2;
-					if (access(tok, X_OK) == 0)
+					if (stat(tok, &st) == 0 &&
+					    (st.st_mode & S_IXUSR) && S_ISREG(st.st_mode))
 					{
 						args = getArgs(tok, argv, save);
 						cstatus = runProg(tok, args, head);
@@ -90,6 +92,57 @@ int main(int argc, char *argv[], char *env[])
 			_exit(9);
 		}
 	}
+}
+
+/**
+ * checkBuiltins - checks for builtin commands matching the first inputted word
+ *
+ * @inp: input string from main
+ * @save: saveptr for tokens
+ *
+ * Return: returns 1 on success, 0 on failure.
+ */
+int checkBuiltins(char *inp, char *save, env_t **environ, helper_t *helper)
+{
+	char *value, *tok;
+	char delim = ' ';
+	hist_t *hist_head;
+
+	hist_head = helper->hist_head;
+	if (allstrcmp(inp, "env") == 0) /*if the first word is env, run env*/
+	{
+		listEnv(environ);
+	}
+	else if (allstrcmp(inp, "exit") == 0) /* probably split this into a dif func*/
+	{
+		tok = splitstr(NULL, &delim, &save);
+		push_hist(helper->hist_head, helper->env);
+		exitBuiltin(tok, inp, environ, helper);
+	}
+	else if (allstrcmp(inp, "setenv") == 0) /*setenv*/
+	{
+		tok = splitstr(NULL, &delim, &save);
+		value = splitstr(NULL, &delim, &save);
+		setEnvPtr(tok, value, *environ);
+	}
+	else if (allstrcmp(inp, "unsetenv") == 0)
+	{
+		tok = splitstr(NULL, &delim, &save);
+		unsetEnv(tok, environ);
+	}
+	else if (allstrcmp(inp, "history") == 0)
+		print_hist(hist_head);
+	else if (allstrcmp(inp, "cd") == 0)
+		cdBuiltin(save, *environ);
+	else if (allstrcmp(inp, "help") == 0)
+	{
+		tok = splitstr(NULL, &delim, &save);
+		helpBuiltIn(tok);
+	}
+	else
+		return (0);
+
+	return (1);
 }
 
 int getTermType(int file)
@@ -137,9 +190,12 @@ helper_t *initHelper(env_t *env, hist_t *hist_head)
 int checkPath(char *inp, char *argv[], char *save, env_t *head)
 {
 	int j;
-	char *temp, *path[PATHSIZE], *tok, **args, *pathsave, *paths;
+	char *temp, *path[PATHSIZE], *tok, **args, *pathsave, *paths, *cwd;
 	char colon = ':';
 
+	temp = NULL;
+	cwd = malloc(100);
+	getcwd(cwd, 100);
 	if (getEnvPtr("PATH", head) != NULL)
 	{
 		if (inp == NULL || inp[0] == '\0')
@@ -149,15 +205,17 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head)
 		tok = splitstr(paths, &colon, &pathsave);
 		while (tok != NULL)
 		{
-			if (tok[0] != '\0')
-				path[j++] = tok;
+			path[j++] = tok;
 			tok = splitstr(NULL, &colon, &pathsave);
 		}
 		path[j] = NULL;
 		tok = inp; j = 0;
 		while (path[j] != NULL)
 		{
-			temp = dir_concat(path[j], tok);
+			if (path[j][0] == '\0')
+				temp = dir_concat(cwd, tok);
+			else
+				temp = dir_concat(path[j], tok);
 			if (access(temp, X_OK) == 0)
 			{
 				args = getArgs(tok, argv, save);
@@ -171,17 +229,20 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head)
 			}
 			j++;
 		}
-		if (path[j] != NULL)
+		if (path[j] == NULL)
 		{
 			if (temp != NULL)
 				free(temp);
 			free(paths);
-			return (1); /* Need to free 2d array for path either way, on return 1 or 0! */
+			free(cwd);
+			return (0); /* Need to free 2d array for path either way, on return 1 or 0! */
 		}
 	}
 	free(paths);
-	free(temp);
-	return (0);
+	if (temp != NULL)
+		free(temp);
+	free(cwd);
+	return (1);
 
 }
 
@@ -265,7 +326,7 @@ int runProg(char *name, char *argv[], env_t *head)
 		_putstring("Attempted to run unknown command: ");
 		_putstring(name);
 		_putchar('\n');
-		return (-1);
+		exit(-1);
 	}
 	else /* if neither are true, we're in the parent */
 	{

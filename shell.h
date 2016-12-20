@@ -138,6 +138,8 @@ hist_t *pull_hist(hist_t **hist_head, env_t *head);
 /* helpBuildIn prototypes */
 int helpBuiltIn(char *file);
 
+char *whitespace(char *buf, helper_t *helper);
+
 /* help_1.c prototypes */
 void helpExit(void);
 void helpEnv(void);
