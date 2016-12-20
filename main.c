@@ -1,5 +1,7 @@
 #include "shell.h"
 
+void sighandler(int signum);
+
 /**
  * main - entry point for shell program
  * loops input for a shell, splits them into appropriate actions
@@ -38,7 +40,7 @@ int main(int argc, char *argv[], char *env[])
 	}
 	type = getTermType(file);
 	(void) argc; /* need to use this to check to check for scripts later!*/
-	signal(SIGINT, SIG_IGN); /* Ignore any SIGINT (ctrl-c) signal */
+	signal(SIGINT, sighandler);
 	initEnvList(env, &head);
 	hist_head = pull_hist(&hist_head, head);
 	helper = initHelper(head, hist_head);
@@ -336,4 +338,12 @@ int runProg(char *name, char *argv[], env_t *head)
 		return (cstatus); /* now return the child's exit status */
 	}
 
+}
+
+
+void sighandler(int signum)
+{
+	(void) signum;
+	write(0, "\n", 1);
+	prompt();
 }
