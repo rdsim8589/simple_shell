@@ -7,7 +7,7 @@
  */
 int helpBuiltIn(char *file)
 {
-	if (file == NULL)
+	if (file == NULL || file[0] == '\0')
 	{
 		_putstring("Select a built-in: alias, cd, env, exit,");
 		_putstring(" help, history, setenv, unsetenv \n");
@@ -47,7 +47,7 @@ int helpBuiltIn(char *file)
 	}
 	else
 	{
-		_putstring("not a built-in of simple_shell");
+		_putstring("Not a built-in of simple_shell.\n");
 		return (-1);
 	}
 	return (1);
