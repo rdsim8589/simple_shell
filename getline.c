@@ -138,7 +138,6 @@ char *parseDollar(char *buf, helper_t *helper)
 			if (envname == NULL)
 			{
 				newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
-				free(buf);
 				buf = newbuf;
 			}
 			else
