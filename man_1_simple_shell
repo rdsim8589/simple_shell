@@ -17,7 +17,7 @@ The simple_shell is a command that reads lines from either a file or the termina
 The shell reads input in terms of lines from a file and breaks it up into words at whitespace (blanks and tabs), and at certain sequences of characters that are special to the shell called “operators”.  There are two types of operators: control operators and redirection operators (their meaning is discussed later). Following is a list of operators:
 
     Operator
-	&&  ;  ||
+	&&  ;  ||  |
 
 .SS Aliases
  An alias is a name and corresponding value set using the alias(1) builtin command.  Whenever a reserved word may occur (see above), and after checking for reserved words, the shell checks the word to see if it matches an alias.  If it does, it replaces it in the input stream with its value.  For example, if there is an alias called “lf” with the value “ls -F”, thenthe input:
