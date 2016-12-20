@@ -61,6 +61,7 @@ int main(int argc, char *argv[], char *env[])
 					{
 						args = getArgs(tok, argv, save);
 						cstatus = runProg(tok, args, head);
+						break;
 					}
 					else
 					{
@@ -137,9 +138,11 @@ helper_t *initHelper(env_t *env, hist_t *hist_head)
 int checkPath(char *inp, char *argv[], char *save, env_t *head)
 {
 	int j;
-	char *temp, *path[PATHSIZE], *tok, **args, *pathsave, *paths;
+	char *temp, *path[PATHSIZE], *tok, **args, *pathsave, *paths, *cwd;
 	char colon = ':';
 
+	temp = NULL;
+	cwd = _strdup(getcwd(NULL, 100));
 	if (getEnvPtr("PATH", head) != NULL)
 	{
 		if (inp == NULL || inp[0] == '\0')
@@ -149,15 +152,17 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head)
 		tok = splitstr(paths, &colon, &pathsave);
 		while (tok != NULL)
 		{
-			if (tok[0] != '\0')
-				path[j++] = tok;
+			path[j++] = tok;
 			tok = splitstr(NULL, &colon, &pathsave);
 		}
 		path[j] = NULL;
 		tok = inp; j = 0;
 		while (path[j] != NULL)
 		{
-			temp = dir_concat(path[j], tok);
+			if (path[j][0] == '\0')
+				temp = dir_concat(cwd, tok);
+			else
+				temp = dir_concat(path[j], tok);
 			if (access(temp, X_OK) == 0)
 			{
 				args = getArgs(tok, argv, save);
@@ -180,7 +185,8 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head)
 		}
 	}
 	free(paths);
-	free(temp);
+	if (temp != NULL)
+		free(temp);
 	return (0);
 
 }
@@ -252,6 +258,11 @@ int runProg(char *name, char *argv[], env_t *head)
 	int cstatus, envsize;
 	char **envs;
 
+	if (argv == NULL)
+	{
+		argv[0] = name;
+		argv[1] = NULL;
+	}
 	envs = buildEnv(head, &envsize);
 	cpid = fork();
 	if (cpid == -1) /* if fork returns -1, it failed */
@@ -265,7 +276,7 @@ int runProg(char *name, char *argv[], env_t *head)
 		_putstring("Attempted to run unknown command: ");
 		_putstring(name);
 		_putchar('\n');
-		return (-1);
+		exit(-1);
 	}
 	else /* if neither are true, we're in the parent */
 	{

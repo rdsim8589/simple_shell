@@ -65,10 +65,12 @@ char *get_line(int file, helper_t *helper)
 
 		return(buf);
 	}
-	if (buf[0] == ';')
+	buf[*total - 1] = '\0';
+	buf = whitespace(buf, helper);
+	while (buf[0] == ';')
 	{
 		buf += 1;
-		*bufsize -= 1;
+		*total -= 1;
 	}
 	i = 0;
 	buf = parseDollar(buf, helper);
@@ -96,7 +98,6 @@ char *get_line(int file, helper_t *helper)
 	*last = i + 1; /*this is where we need buf to be next, +1 for the '\0'*/
 	*printed += i + 1; /*total count on how many we've printed*/
 	bufhead = buf;
-	buf = parseWhitespace(buf);
 	return (buf); /* return buf */
 }
 
@@ -160,23 +161,6 @@ char *parseDollar(char *buf, helper_t *helper)
 	return (buf);
 }
 
-char *parseWhitespace(char *buf)
-{
-	int length;
-	while (buf[0] == ' ')
-		buf++;
-	length = _strlen(buf);
-	if (length != 0)
-	{
-		while (buf[length - 1] == ' ')
-		{
-			buf[length - 1] = '\0';
-			length = _strlen(buf);
-		}
-	}
-	return (buf);
-}
-
 /**
  * innerCat - 'concatenates' a string to the inside of a buffer
  * after remallocing it large and freeing old buffer.
@@ -205,17 +189,6 @@ char *innerCat(char *buf, char *string, int *bufsize, int insert)
 	return (newbuf);
 }
 
-/**
- * sliceString - slices a certain number of characters from a buffer
- * reallocs the buffer to a smaller size and frees it automatically.
- *
- * @buf: buffer
- * @bufsize: size of buffer
- * @slicesize: number of characters to remove
- * @index: index of where to start slicing
- *
- * Return: Returns a pointer to the newly sliced string, or NULL if not possible.
- */
 char *sliceString(char *buf, int *bufsize, int slicesize, int index)
 {
 	char *newbuf;
