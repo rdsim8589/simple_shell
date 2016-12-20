@@ -7,6 +7,12 @@
  */
 int helpBuiltIn(char *file)
 {
+	if (file == NULL)
+	{
+		_putstring("Select a built-in: alias, cd, env, exit,");
+		_putstring(" help, history, setenv, unsetenv \n");
+		return (-1);
+	}
 	if (_strcmp(file, "exit") == 0)
 	{
 		helpExit();
@@ -17,7 +23,7 @@ int helpBuiltIn(char *file)
 	}
 	else if (_strcmp(file, "setenv") == 0)
 	{
-	helpSetEnv();
+		helpSetEnv();
 	}
 	else if	(_strcmp(file, "unsetenv") == 0)
 	{
