@@ -34,6 +34,11 @@ char *get_line(int file, helper_t *helper)
 		memset(buf, '\0', *bufsize);
 		readval = read(file, buf, 1024);
 		*total = readval; /*total is the total we've read, static*/
+		if (readval == 0)
+		{
+			_putstring("Goodbye!\n");
+			exitBuiltin("0", buf, &helper->env, helper);
+		}
 		while (readval >= 1024) /*if we read 1024, there's more in stdin*/
 		{
 			readbuf = malloc(1024);
