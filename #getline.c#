@@ -62,7 +62,6 @@ char *get_line(int file, helper_t *helper)
 		}
 		*last = i + 1; /*this is where we need buf to be next, +1 for the '\0'*/
 		*printed += i + 1; /*total count on how many we've printed*/
-
 		return(buf);
 	}
 	if (buf[0] == ';')
@@ -95,8 +94,8 @@ char *get_line(int file, helper_t *helper)
 	}
 	*last = i + 1; /*this is where we need buf to be next, +1 for the '\0'*/
 	*printed += i + 1; /*total count on how many we've printed*/
-	bufhead = buf;
 	buf = parseWhitespace(buf);
+	bufhead = buf;
 	return (buf); /* return buf */
 }
 

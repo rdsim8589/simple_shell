@@ -14,7 +14,7 @@ int main(int argc, char *argv[], char *env[])
 	char delim = ' ';
 	env_t *head;
 	helper_t *helper;
-	int file, cstatus;
+	int file, cstatus, type;
 	hist_t *hist_head;
 
 	hist_head = NULL;
@@ -35,6 +35,7 @@ int main(int argc, char *argv[], char *env[])
 		_putstring("Please run with no argument, or one argument to run from script.");
 		_exit(9);
 	}
+	type = getTermType(file);
 	(void) argc; /* need to use this to check to check for scripts later!*/
 	signal(SIGINT, SIG_IGN); /* Ignore any SIGINT (ctrl-c) signal */
 	initEnvList(env, &head);
@@ -43,7 +44,7 @@ int main(int argc, char *argv[], char *env[])
 	/* grab the history file and populate the hist linked list */
 	while (1)
 	{
-		if (argc == 1)
+		if (argc == 1 && type == 1)
 			prompt();
 		inp = get_line(file, helper);
 		args = NULL;
@@ -52,9 +53,10 @@ int main(int argc, char *argv[], char *env[])
 			tok = splitstr(inp, &delim, &save);
 			if (checkBuiltins(inp, save, &head, helper) == 0)
 			{
-				if (tok[0] == '.' && tok[1] == '/')
+				if ((tok[0] == '.' && tok[1] == '/') || tok[0] == '/')
 				{
-					tok = tok + 2;
+					if (tok[0] == '.')
+						tok = tok + 2;
 					if (access(tok, X_OK) == 0)
 					{
 						args = getArgs(tok, argv, save);
@@ -62,29 +64,44 @@ int main(int argc, char *argv[], char *env[])
 					}
 					else
 					{
-						tok = (tok - 2);
+						if (tok[0] != '/')
+							tok = (tok - 2);
 						_putstring(tok);
 						_putstring(": No such file or directory.\n");
 					}
 				}
 				else
-					cstatus = checkPath(tok, args, save, head);
-				if (cstatus == 0)
 				{
-					_putstring(tok);
-					_putstring(": command not found.\n");
+					cstatus = checkPath(tok, args, save, head);
+					if (cstatus == 0)
+					{
+						_putstring(tok);
+						_putstring(": command not found.\n");
+					}
 				}
 			}
 			inp = get_line(file, helper);
 			save = NULL;
 		}
-		if (inp == NULL && argc == 2)
+		if (inp == NULL && (argc == 2 || type == 0))
 		{
 			free(inp);
 			free_list(head);
 			_exit(9);
 		}
 	}
+}
+
+int getTermType(int file)
+{
+	struct stat st;
+	fstat(file, &st);
+	if (S_ISCHR(st.st_mode)) {
+		return (1);
+	} else if (S_ISFIFO(st.st_mode)) {
+		return (0);
+	}
+	return (-1);
 }
 
 helper_t *initHelper(env_t *env, hist_t *hist_head)
@@ -132,7 +149,8 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head)
 		tok = splitstr(paths, &colon, &pathsave);
 		while (tok != NULL)
 		{
-			path[j++] = tok;
+			if (tok[0] != '\0')
+				path[j++] = tok;
 			tok = splitstr(NULL, &colon, &pathsave);
 		}
 		path[j] = NULL;

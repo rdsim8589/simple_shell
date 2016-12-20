@@ -89,6 +89,8 @@ char *innerCat(char *buf, char *string, int *bufsize, int insert);
 char *sliceString(char *buf, int *bufsize, int slicesize, int index);
 char *expandBuffer(char *buf, int bufsize, int newsize);
 
+int getTermType(int file);
+
 /* envlist.c prototypes */
 env_t *initEnvList(char **environ, env_t **head);
 char **buildEnv(env_t *head, int *envsize);
