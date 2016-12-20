@@ -92,7 +92,10 @@ int checkBuiltins(char *inp, char *save, env_t **environ, helper_t *helper)
 	else if (allstrcmp(inp, "cd") == 0)
 		cdBuiltin(save, *environ);
 	else if (allstrcmp(inp, "help") == 0)
-		_putstring("Run help");
+	{
+		tok = splitstr(NULL, &delim, &save);
+		helpBuiltIn(tok);
+	}
 	else
 		return (0);
 
