@@ -67,6 +67,7 @@ void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper)
 	free(helper->total);
 	free(helper->last);
 	free(helper->bufsize);
+	free(helper->pid);
 	free(helper);
 	if (tok != NULL)
 		i = atoi(tok);

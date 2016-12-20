@@ -7,7 +7,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
-extern char **environ;
+
 #define BUFSIZE 1024
 #define ARGS 256
 #define PATHSIZE 10
@@ -55,7 +55,7 @@ typedef struct hist_s
  * @bufsize:
  * @printed:
  * @last:
- * 
+ *
  * Description:
  */
 typedef struct helper_s
@@ -66,6 +66,7 @@ typedef struct helper_s
 	int *bufsize;
 	int *printed;
 	int *last;
+	char *pid;
 } helper_t;
 
 
@@ -100,11 +101,13 @@ env_t *getEnvPtr(char *name, env_t *head);
 
 
 /* main.c prototypes */
-helper_t *initHelper(env_t *env, hist_t *hist_head);
+helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid);
 int checkPath(char *inp, char *argv[], char *save, env_t *head);
 void freeArgs(char **args, int envsize);
 char **getArgs(char *tok, char *argv[], char *save);
 int runProg(char *name, char *argv[], env_t *head);
+
+char *_getpid(void);
 
 /* stringlib.c prototypes */
 int _strlen(char *s);

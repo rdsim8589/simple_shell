@@ -108,3 +108,41 @@ char *parseDollar(char *buf, helper_t *helper)
 	}
 	return (buf);
 }
+
+char *_getpid(void)
+{
+	pid_t pid, pid2;
+	char *cpid, *dir, *buf, *save, *tok, *newbuf;
+	int file, status, status2, i, readval;
+
+	pid = fork();
+	if (pid > 0)
+	{
+		cpid = malloc(sizeof(long) * sizeof(char));
+		cpid[0] = '\0';
+		dir = malloc(100);
+		dir[0] = '\0';
+		itoa(pid, cpid);
+		strcat(dir, "/proc/");
+		strcat(dir, cpid);
+		strcat(dir, "/stat");
+		file = open(dir, O_RDONLY);
+		buf = malloc(1024);
+		readval = read(file, buf, 1024);
+		tok = splitstr(buf, " ", &save);
+		tok = splitstr(NULL, " ", &save);
+		tok = splitstr(NULL, " ", &save);
+		tok = splitstr(NULL, " ", &save);
+		wait(&status);
+	}
+	else
+	{
+		_exit(0);
+	}
+	free(dir);
+	free(cpid);
+	newbuf = malloc(_strlen(tok) + 1);
+	memcpy(newbuf, tok, _strlen(tok) + 1);
+	free(buf);
+	return (newbuf);
+}

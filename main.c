@@ -10,9 +10,9 @@ void sighandler(int signum);
  * @argv: arguments passed
  * Return: return values in man page
  */
-int main(int argc, char *argv[], char *env[])
+int main(int argc, char *argv[], char *envp[])
 {
-	char *save, *tok, *inp, **args;
+	char *save, *tok, *inp, **args, *pid;
 	char delim = ' ';
 	env_t *head;
 	helper_t *helper;
@@ -20,6 +20,7 @@ int main(int argc, char *argv[], char *env[])
 	hist_t *hist_head;
 	struct stat st;
 
+	pid = _getpid();
 	hist_head = NULL;
 	head = NULL;
 	if (argc == 1)
@@ -41,9 +42,9 @@ int main(int argc, char *argv[], char *env[])
 	type = getTermType(file);
 	(void) argc; /* need to use this to check to check for scripts later!*/
 	signal(SIGINT, sighandler);
-	initEnvList(env, &head);
+	initEnvList(envp, &head);
 	hist_head = pull_hist(&hist_head, head);
-	helper = initHelper(head, hist_head);
+	helper = initHelper(head, hist_head, pid);
 	/* grab the history file and populate the hist linked list */
 	while (1)
 	{
@@ -159,7 +160,7 @@ int getTermType(int file)
 	return (-1);
 }
 
-helper_t *initHelper(env_t *env, hist_t *hist_head)
+helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid)
 {
 	helper_t *helper;
 
@@ -174,6 +175,7 @@ helper_t *initHelper(env_t *env, hist_t *hist_head)
 	*(helper->bufsize) = 1024;
 	helper->last = malloc(sizeof(int) * 1);
 	*(helper->last) = 0;
+	helper->pid = pid;
 
 	return (helper);
 }
