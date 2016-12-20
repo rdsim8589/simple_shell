@@ -61,7 +61,6 @@ int main(int argc, char *argv[], char *env[])
 					{
 						args = getArgs(tok, argv, save);
 						cstatus = runProg(tok, args, head);
-						break;
 					}
 					else
 					{
@@ -142,7 +141,8 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head)
 	char colon = ':';
 
 	temp = NULL;
-	cwd = _strdup(getcwd(NULL, 100));
+	cwd = malloc(100);
+	getcwd(cwd, 100);
 	if (getEnvPtr("PATH", head) != NULL)
 	{
 		if (inp == NULL || inp[0] == '\0')
@@ -176,18 +176,20 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head)
 			}
 			j++;
 		}
-		if (path[j] != NULL)
+		if (path[j] == NULL)
 		{
 			if (temp != NULL)
 				free(temp);
 			free(paths);
-			return (1); /* Need to free 2d array for path either way, on return 1 or 0! */
+			free(cwd);
+			return (0); /* Need to free 2d array for path either way, on return 1 or 0! */
 		}
 	}
 	free(paths);
 	if (temp != NULL)
 		free(temp);
-	return (0);
+	free(cwd);
+	return (1);
 
 }
 
@@ -258,11 +260,6 @@ int runProg(char *name, char *argv[], env_t *head)
 	int cstatus, envsize;
 	char **envs;
 
-	if (argv == NULL)
-	{
-		argv[0] = name;
-		argv[1] = NULL;
-	}
 	envs = buildEnv(head, &envsize);
 	cpid = fork();
 	if (cpid == -1) /* if fork returns -1, it failed */
