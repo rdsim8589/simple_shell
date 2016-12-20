@@ -40,57 +40,62 @@ char *get_line(int file, helper_t *helper)
 			*bufsize += 1024;
 		}
 		if (buf[0] != '\0')
-			add_hist(*total, hist_head, buf);
+			add_hist(*total + 1, hist_head, buf);
 		bufhead = buf; /*bufhead is a ptr to the beginning of the buffer*/
 	}
 	else
 	{
 		buf += *last; /*if this isn't the first time around, advance buf ptr*/
+		if (buf[0] == '\0')
+			buf++;
+		if (*printed >= *total) /*if this is true, we're done with this buffer*/
+		{
+			*printed = 0;
+			*total = 0;
+			free(bufhead);
+			return (NULL);
+		}
+		i = 0;
+		while (buf[i] != '\0') /*figure out how many chars we're printing*/
+		{
+			i++;
+		}
+		*last = i + 1; /*this is where we need buf to be next, +1 for the '\0'*/
+		*printed += i + 1; /*total count on how many we've printed*/
+		return(buf);
 	}
-	if (bufhead[0] == ';')
+	if (buf[0] == ';')
 	{
 		buf += 1;
 		*bufsize -= 1;
 	}
-	if (*printed >= *total || bufhead[0] == '\n' || bufhead[0] == '\0') /*if this is true, we're done with this buffer*/
-	{
-		*printed = 0;
-		*total = 0;
-		free(bufhead);
-		return (NULL);
-	}
 	i = 0;
+	buf = parseDollar(buf, helper);
 	while (i < *total) /*run through and find ';' and '\n'*/
 	{
-		if (bufhead[i] == EOF)
+		if (buf[i] == EOF)
 		{
 			buf[i] = '\0';
 		}
-		if (bufhead[i] == ';')
+		if (buf[i] == ';')
 		{
 			buf[i] = '\0';
 		}
-		else if (bufhead[i] == '\n')
+		else if (buf[i] == '\n')
 		{
 			buf[i] = '\0';
 		}
 		i++;
 	}
 	i = 0;
-	while (bufhead[i] != '\0') /*figure out how many chars we're printing*/
+ 	while (buf[i] != '\0') /*figure out how many chars we're printing*/
 	{
 		i++;
 	}
 	*last = i + 1; /*this is where we need buf to be next, +1 for the '\0'*/
 	*printed += i + 1; /*total count on how many we've printed*/
-	newbuf = parseDollar(buf, helper);
-	if (newbuf != buf)
-	{
-		buf = newbuf;
-		bufhead = newbuf;
-	}
-	buf = parseWhitespace(buf);
-//	if (*last == *total && buf[0] == '\0')
+	bufhead = buf;
+//	buf = parseWhitespace(buf);
 	return (buf); /* return buf */
 }
 
@@ -100,13 +105,13 @@ char *parseDollar(char *buf, helper_t *helper)
 	char *newbuf;
 	char *value;
 	env_t *envname;
-	int i, j, k, start;
+	int i, j, k, start, change;
 	env_t *env;
 
 	start = 0;
 	env = helper->env;
 	i = 0;
-
+	change = 0;
 	while (i < _strlen(buf))
 	{
 		if (buf[i] == '$')
@@ -114,7 +119,7 @@ char *parseDollar(char *buf, helper_t *helper)
 			start = i + 1;
 			j = 0;
 			i++;
-			while (buf[i] != ' ' && buf[i] != '\n' && buf[i] != '\0' && buf[i] != '$')
+			while (buf[i] != ' ' && buf[i] != '\n' && buf[i] != '\0' && buf[i] != '$' && buf[i] != ';')
 			{
 				i++;
 				j++;
@@ -131,15 +136,16 @@ char *parseDollar(char *buf, helper_t *helper)
 			if (envname == NULL)
 			{
 				newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
+				free(buf);
 				buf = newbuf;
 			}
 			else
 			{
 				value = envname->value;
 				newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
-				newbuf = innerCat(newbuf, value, helper->bufsize, start - 1);
-				*(helper->last) += (_strlen(value) - _strlen(name) - 1);
-				buf = newbuf;
+				buf = innerCat(newbuf, value, helper->bufsize, start - 1);
+				*(helper->total) += _strlen(value);
+				*(helper->total) -= (_strlen(name) + 1);
 			}
 			free(name);
 		}
@@ -194,6 +200,7 @@ char *innerCat(char *buf, char *string, int *bufsize, int insert)
 	_memcpy(newbuf + insert, string, _strlen(string));
 	_memcpy(newbuf + insert  + _strlen(string), buf + insert, *bufsize - insert);
 	*bufsize = newsize;
+	free(buf);
 	return (newbuf);
 }
 
@@ -220,6 +227,7 @@ char *sliceString(char *buf, int *bufsize, int slicesize, int index)
 	if (buf[index + slicesize] != '\0')
 		_memcpy(newbuf + index, buf + index + slicesize, *bufsize - index - slicesize);
 	*bufsize = newsize;
+	free(buf);
 	return (newbuf);
 }
 
