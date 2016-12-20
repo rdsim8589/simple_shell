@@ -1,5 +1,17 @@
 #include "shell.h"
 
+
+/**
+ * get_line - gets a line from given file
+ *
+ * @file: file passed
+ * @helper: helper_t helper struct
+ *
+ * Return: returns a pointer to the new buff
+ *
+ * TODO: NEED TO SPLIT INTO 2 FUNCTIONS
+ * ONE TO RUN INITIALLY, ONE THAT RUNS AFTER TIL NULL
+ */
 char *get_line(int file, helper_t *helper)
 {
 	char *newbuf, *readbuf;
@@ -11,16 +23,13 @@ char *get_line(int file, helper_t *helper)
 	static int *last;
 	static char *buf, *bufhead;
 
-	last = helper->last;
-	total = helper->total;
-	printed = helper->printed;
-	hist_head = &helper->hist_head;
+	last = helper->last; total = helper->total;
+	printed = helper->printed; hist_head = &helper->hist_head;
 	bufsize = helper->bufsize; /*bufsize starts at 1024*/
 
 	if (*total == 0)
 	{
-		*bufsize = 1024;
-		*printed = 0; /* printed holds a count of what we've sent out*/
+		*bufsize = 1024; *printed = 0;
 		buf = malloc(sizeof(char) * *bufsize);
 		memset(buf, '\0', *bufsize);
 		readval = read(file, buf, 1024);
@@ -45,13 +54,18 @@ char *get_line(int file, helper_t *helper)
 	}
 	else
 	{
+		while (buf[0] == ';')
+		{
+			buf += 1;
+			*total -= 1;
+			*printed -= 1;
+		}
 		buf += *last; /*if this isn't the first time around, advance buf ptr*/
 		if (buf[0] == '\0')
 			buf++;
 		if (*printed >= *total) /*if this is true, we're done with this buffer*/
 		{
-			*printed = 0;
-			*total = 0;
+			*printed = 0; *total = 0;
 			free(bufhead);
 			return (NULL);
 		}
@@ -67,11 +81,6 @@ char *get_line(int file, helper_t *helper)
 	}
 	buf[*total - 1] = '\0';
 	buf = whitespace(buf, helper);
-	while (buf[0] == ';')
-	{
-		buf += 1;
-		*total -= 1;
-	}
 	i = 0;
 	buf = parseDollar(buf, helper);
 	while (i < *total) /*run through and find ';' and '\n'*/
@@ -99,65 +108,6 @@ char *get_line(int file, helper_t *helper)
 	*printed += i + 1; /*total count on how many we've printed*/
 	bufhead = buf;
 	return (buf); /* return buf */
-}
-
-char *parseDollar(char *buf, helper_t *helper)
-{
-	char *name;
-	char *newbuf;
-	char *value;
-	env_t *envname;
-	int i, j, k, start, change;
-	env_t *env;
-
-	start = 0;
-	env = helper->env;
-	i = 0;
-	change = 0;
-	while (i < _strlen(buf))
-	{
-		if (buf[i] == '$')
-		{
-			start = i + 1;
-			j = 0;
-			i++;
-			while (buf[i] != ' ' && buf[i] != '\n' && buf[i] != '\0' && buf[i] != '$' && buf[i] != ';')
-			{
-				i++;
-				j++;
-			}
-			name = malloc((j + 1) * (sizeof(char)));
-			j = 0;
-			k = start;
-			while (k != i)
-			{
-				name[j++] = buf[k++];
-			}
-			name[j] = '\0';
-			envname = getEnvPtr(name, env);
-			if (envname == NULL)
-			{
-				newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
-				buf = newbuf;
-			}
-			else
-			{
-				value = envname->value;
-				newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
-				buf = innerCat(newbuf, value, helper->bufsize, start - 1);
-				*(helper->total) += _strlen(value);
-				*(helper->total) -= (_strlen(name) + 1);
-			}
-			free(name);
-		}
-		if (start != 0)
-		{
-			i = start;
-			start = 0;
-		}
-		i++;
-	}
-	return (buf);
 }
 
 /**
@@ -198,7 +148,9 @@ char *sliceString(char *buf, int *bufsize, int slicesize, int index)
 	memset(newbuf, '\0', newsize);
 	_memcpy(newbuf, buf, index);
 	if (buf[index + slicesize] != '\0')
+	{
 		_memcpy(newbuf + index, buf + index + slicesize, *bufsize - index - slicesize);
+	}
 	*bufsize = newsize;
 	free(buf);
 	return (newbuf);

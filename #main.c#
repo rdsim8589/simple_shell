@@ -95,7 +95,7 @@ int main(int argc, char *argv[], char *env[])
 }
 
 /**
- * checkBuiltins - checks for builtin commands matching the first inputted word
+e * checkBuiltins - checks for builtin commands matching the first inputted word
  *
  * @inp: input string from main
  * @save: saveptr for tokens

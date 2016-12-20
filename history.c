@@ -1,11 +1,13 @@
 #include "shell.h"
+
 /**
  * add_hist - adds the user entry to hist linked list
  * @total: size of the num of bytes to copy
-n * @head: a pointer to the head of hist linked list
+ * @hist_head: a pointer to the head of hist linked list
  * @buf: a pointer to the string of chars to be copied
+ *
+ * Return: returns the new history head
  */
-
 hist_t *add_hist(int total, hist_t **hist_head, char *buf)
 {
 	hist_t *new_hist, *current;
@@ -41,6 +43,7 @@ hist_t *add_hist(int total, hist_t **hist_head, char *buf)
 	}
 	return (*hist_head);
 }
+
 /**
  * clear_hist - clear the history linked list
  * @hist_head: a pointer ot the hist_head of the hist linked list
@@ -91,10 +94,8 @@ void push_hist(hist_t *hist_head, env_t *head)
 
 	if (!hist_head || !head)
 		exit(100);
-	/* get the env for $HOME */
 	env_var = getEnvPtr("HOME", head);
-	home = env_var->value;
-	home = dir_concat(home, HIST_FILE);
+	home = env_var->value; home = dir_concat(home, HIST_FILE);
 	mode = S_IRUSR | S_IWUSR;
 	file = open(home, O_CREAT | O_WRONLY | O_TRUNC, mode);
 	if (file == -1)
@@ -110,14 +111,12 @@ void push_hist(hist_t *hist_head, env_t *head)
 			err_w = write(file, hist_head->entry, _strlen(hist_head->entry));
 			if (err_w == -1 || err_w != _strlen(hist_head->entry))
 			{
-				free(home);
-				exit(102);
+				free(home); exit(102);
 			}
 			err_w = write(file, "\n", 1);
 			if (err_w == -1 || err_w != 1)
 			{
-				free(home);
-				exit(103);
+				free(home); exit(103);
 			}
 		}
 		hist_head = hist_head->next;
@@ -125,18 +124,19 @@ void push_hist(hist_t *hist_head, env_t *head)
 	err_c = close(file);
 	if (err_c == -1)
 	{
-		free(home);
-		exit(104);
+		free(home); exit(104);
 	}
 	free(home);
 }
+
 /**
  * pull_hist - pulls entries from history and added it to hist linked list.
  * the linked list will only store up to 4096 lines
  * @hist_head: pointer to the head of the hist linked list
  * @head: the head of the enviroment linked list
+ *
+ * Return: returns head of history list
  */
-
 hist_t *pull_hist(hist_t **hist_head, env_t *head)
 {
 	char *home, *hist_line, delim, *saveptr, *buf;
@@ -145,61 +145,38 @@ hist_t *pull_hist(hist_t **hist_head, env_t *head)
 	int file, err_c, err_r, buf_len, i;
 	struct stat st;
 
-	/* get the home and concat with the history direct */
 	env_var = getEnvPtr("HOME", head);
-	home = env_var->value;
-	home = dir_concat(home, HIST_FILE);
-
-	/* read the history file into a big buffer */
+	home = env_var->value; home = dir_concat(home, HIST_FILE);
 	file = open(home, O_RDONLY, 0744);
-/* ERROR CHECKING = CHECK TO SEE IF WE DON'T HAVE PERMISSION */
 	if (file == -1)
-	{
 		return (*hist_head);
-	}
-	/* using stat struct to get file size */
 	if (stat(home, &st) == 0)
-	{
 		buf_len = st.st_size;
-	}
 	else
 	{
-		_putstring("failed to get count of hist_file");
-		exit(301);
+		_putstring("failed to get count of hist_file");	exit(301);
 	}
-	buf = malloc(sizeof(char) * buf_len);
-	err_r = read(file, buf, buf_len);
+	buf = malloc(sizeof(char) * buf_len); err_r = read(file, buf, buf_len);
 	if (err_r == -1)
-	{
 		_putstring("unable to read hist_file");
-	}
-	buf[buf_len-1] = '\0';
-	delim = '\n';
-	i = 1;
-	hist_line = splitstr(buf, &delim, &saveptr);
+	buf[buf_len - 1] = '\0'; delim = '\n';
+	i = 1; hist_line = splitstr(buf, &delim, &saveptr);
 	while (hist_line != NULL)
 	{
 		add_hist(_strlen(hist_line) + 1, hist_head, hist_line);
-		/* if the counter is greater than 4096 remove the head node of history  */
 		if (i > 4096)
 		{
-			current_node = *hist_head;
-			*hist_head = (*hist_head)->next;
-			free(current_node->entry);
-			free(current_node);
+			current_node = *hist_head; *hist_head = (*hist_head)->next;
+			free(current_node->entry); free(current_node);
 		}
-		/* add to the end of the history of the linked list */
 		hist_line = splitstr(NULL, &delim, &saveptr);
 		i++;
 	}
 	err_c = close(file);
 	if (err_c == -1)
 	{
-		_putstring("fail to close hist_file");
-		exit(302);
+		_putstring("fail to close hist_file"); exit(302);
 	}
-	/* free buf */
-	free(buf);
-	free(home);
+	free(buf); free(home);
 	return (*hist_head);
 }
