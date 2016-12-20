@@ -55,7 +55,7 @@ void helpSetEnv(void)
  */
 void helpUnsetEnv(void)
 {
-	_putstring("unsetenv: setenv [VARIABLE]\n\n");
+	_putstring("unsetenv: unsetenv [VARIABLE]\n\n");
 
 	_putstring("  The unsetenv() built-in deletes the variable name\n");
 	_putstring("  from the environment. If name does not exist in the\n");
