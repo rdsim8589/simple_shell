@@ -229,7 +229,8 @@ char **getArgs(char *tok, char *argv[], char *save)
 	i = 1;
 	while (arg != NULL)
 	{
-		args[i++] = arg;
+		if (arg[0] != '\0')
+			args[i++] = arg;
 		arg = splitstr(NULL, &delim, &save);
 	}
 	args[i] = NULL;
