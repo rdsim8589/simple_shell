@@ -96,7 +96,7 @@ helper_t *initHelper(env_t *env, hist_t *hist_head)
 	helper->hist_head = hist_head;
 	helper->printed = malloc(sizeof(int) * 1);
 	*(helper->printed) = 0;
-	helper->total = malloc(sizeof(int) * 1);
+	helper->total = malloc(sizeof(long) * 1);
 	*(helper->total) = 0;
 	helper->bufsize = malloc(sizeof(int) * 1);
 	*(helper->bufsize) = 1024;

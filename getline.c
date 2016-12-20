@@ -2,10 +2,11 @@
 
 char *get_line(int file, helper_t *helper)
 {
-	char *newbuf;
-	int readval, i, *bufsize;
+	char *newbuf, *readbuf;
+	long readval;
+	int i, *bufsize;
 	hist_t **hist_head;
-	static int *total;
+	static long *total;
 	static int *printed;
 	static int *last;
 	static char *buf, *bufhead;
@@ -22,29 +23,21 @@ char *get_line(int file, helper_t *helper)
 		*printed = 0; /* printed holds a count of what we've sent out*/
 		buf = malloc(sizeof(char) * *bufsize);
 		memset(buf, '\0', *bufsize);
-		readval = read(file, buf, *bufsize);
-		if (readval == -1)
-		{
-			_putstring("unable to read from STDIN_FILENO\n");
-			return (NULL);
-		}
+		readval = read(file, buf, 1024);
 		*total = readval; /*total is the total we've read, static*/
-		while (readval == 1024) /*if we read 1024, there's more in stdin*/
+		while (readval >= 1024) /*if we read 1024, there's more in stdin*/
 		{
-			_putstring("expand");
-			newbuf = malloc((*bufsize * 2) * sizeof(char)); /*ghetto realloc*/
-			memset(newbuf, '\0', *bufsize * 2);
-			_memcpy(newbuf, buf, *bufsize);
+			readbuf = malloc(1024);
+			readval = read(file, readbuf, 1024); /*read more*/
+			newbuf = malloc(*bufsize + 1024);
+			memset(newbuf, '\0', *bufsize + 1024);
+			newbuf = _memcpy(newbuf, buf, *bufsize);
+			_memcpy(newbuf + *bufsize, readbuf, 1024);
 			free(buf);
 			buf = newbuf;
-			readval = read(STDIN_FILENO, buf + *bufsize, 1024); /*read more*/
-			if (readval == -1)
-			{
-				_putstring("unable to read from STDIN_FILENO past 1024 bytes\n");
-				return (NULL);
-			}
+			free(readbuf);
 			*total += readval; /*add the readval to the total we've read*/
-			*bufsize *= 2;
+			*bufsize += 1024;
 		}
 		if (buf[0] != '\0')
 			add_hist(*total, hist_head, buf);
@@ -54,12 +47,12 @@ char *get_line(int file, helper_t *helper)
 	{
 		buf += *last; /*if this isn't the first time around, advance buf ptr*/
 	}
-	if (buf[0] == ';')
+	if (bufhead[0] == ';')
 	{
 		buf += 1;
 		*bufsize -= 1;
 	}
-	if (*printed >= *total || buf[0] == '\n' || buf[0] == '\0') /*if this is true, we're done with this buffer*/
+	if (*printed >= *total || bufhead[0] == '\n' || bufhead[0] == '\0') /*if this is true, we're done with this buffer*/
 	{
 		*printed = 0;
 		*total = 0;
@@ -69,22 +62,22 @@ char *get_line(int file, helper_t *helper)
 	i = 0;
 	while (i < *total) /*run through and find ';' and '\n'*/
 	{
-		if (buf[i] == EOF)
+		if (bufhead[i] == EOF)
 		{
 			buf[i] = '\0';
 		}
-		if (buf[i] == ';')
+		if (bufhead[i] == ';')
 		{
 			buf[i] = '\0';
 		}
-		else if (buf[i] == '\n')
+		else if (bufhead[i] == '\n')
 		{
 			buf[i] = '\0';
 		}
 		i++;
 	}
 	i = 0;
-	while (buf[i] != '\0') /*figure out how many chars we're printing*/
+	while (bufhead[i] != '\0') /*figure out how many chars we're printing*/
 	{
 		i++;
 	}
@@ -107,14 +100,13 @@ char *parseDollar(char *buf, helper_t *helper)
 	char *newbuf;
 	char *value;
 	env_t *envname;
-	int i, j, k, start, size;
+	int i, j, k, start;
 	env_t *env;
-	int *total;
- 
+
 	start = 0;
 	env = helper->env;
 	i = 0;
-	total = helper->total;
+
 	while (i < _strlen(buf))
 	{
 		if (buf[i] == '$')
@@ -236,18 +228,8 @@ char *expandBuffer(char *buf, int bufsize, int newsize)
 	char *newbuf;
 
 	newbuf = malloc(newsize * sizeof(char));
-	memset(newbuf, '\0', newsize);
-	_memcpy(newbuf, buf, bufsize);
+	memcpy(newbuf, buf, bufsize);
 	free(buf);
 	buf = newbuf;
 	return (buf);
 }
-
-/*
-newbuf = malloc((*bufsize + 1024) * sizeof(char)); /*ghetto realloc*/
-//memset(newbuf, '\0', *bufsize + 1024);
-//_memcpy(newbuf, buf, *bufsize);
-//free(buf);
-//buf = newbuf; /*need to free buf here, gotta test more*/
-//readval = read(STDIN_FILENO, buf + (*bufsize), 1024); /*read more*/
-//*total += readval; /*add the readval to the total we've read*/

@@ -128,6 +128,7 @@ void push_hist(hist_t *hist_head, env_t *head)
 		free(home);
 		exit(104);
 	}
+	free(home);
 }
 /**
  * pull_hist - pulls entries from history and added it to hist linked list.
@@ -150,11 +151,11 @@ hist_t *pull_hist(hist_t **hist_head, env_t *head)
 	home = dir_concat(home, HIST_FILE);
 
 	/* read the history file into a big buffer */
-	file = open(home, O_RDONLY);
+	file = open(home, O_RDONLY, 0744);
+/* ERROR CHECKING = CHECK TO SEE IF WE DON'T HAVE PERMISSION */
 	if (file == -1)
 	{
-		_putstring("unable to open hist file");
-		exit(300);
+		return (*hist_head);
 	}
 	/* using stat struct to get file size */
 	if (stat(home, &st) == 0)
