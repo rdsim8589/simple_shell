@@ -23,7 +23,7 @@ extern char **environ;
 /**
  * struct env_s - a singly linked list
  * @name:
- * @value:
+n * @value:
  * @next:
  *
  * Description:
@@ -37,18 +37,27 @@ typedef struct env_s
 
 /**
  * struct hist_s - a singly linked list
- * @name:
- * @value:
- * @next:
+ * @entry: pointer to the char* of a user's session
+ * @next: pointer to the next linked list
  *
- * Description:
+ * Description: the struct of the user's history
  */
 typedef struct hist_s
 {
 	char *entry;
 	struct hist_s *next;
 } hist_t;
-
+/**
+ * struct helper_s - a helper struct
+ * @hist_head: head to the hist linked list
+ * @env: head to the env hist linke list
+ * @total:
+ * @bufsize:
+ * @printed:
+ * @last:
+ * 
+ * Description:
+ */
 typedef struct helper_s
 {
 	hist_t *hist_head;
@@ -123,4 +132,20 @@ void clear_hist(hist_t **hist_head);
 void print_hist(hist_t *hist_head);
 void push_hist(hist_t *hist_head, env_t *head);
 hist_t *pull_hist(hist_t **hist_head, env_t *head);
+
+/* helpBuildIn prototypes */
+int helpBuiltIn(char *file);
+
+/* help_1.c prototypes */
+void helpExit(void);
+void helpEnv(void);
+void helpSetEnv(void);
+void helpUnsetEnv(void);
+void helpCD(void);
+
+/* help_2.c prototypes */
+void helpHelp(void);
+void helpAlias(void);
+void helpHistory(void);
+
 #endif
