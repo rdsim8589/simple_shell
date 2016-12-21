@@ -89,7 +89,13 @@ char *parseDollar(char *buf, helper_t *helper)
 		char *sliceCat(char *buf, helper_t *helper)
 		{
 		}
-
+/**
+ * parseComments - parses the comment portion of buffer
+ * @buf: the buffer
+ * @helper: the helper struct
+ *
+ * Return: the parsed section of the buffer
+ */
 char *parseComments(char *buf, helper_t *helper)
 {
 	int i;
@@ -109,7 +115,15 @@ char *parseComments(char *buf, helper_t *helper)
 	}
 	return (buf);
 }
-
+/**
+ * bufferDelete - remove parts of the buffer
+ * @buf: the buffer
+ * @helper: ptr to helper struct
+ * @index: index to remove parts of the buffer
+ * @times: 1 to remove one character
+ *
+ * Return: ptr to the buffer
+ */
 char *bufferDelete(char *buf, helper_t *helper, int index, int times)
 {
 	char *newbuf;
@@ -119,7 +133,12 @@ char *bufferDelete(char *buf, helper_t *helper, int index, int times)
 
 	return (buf);
 }
-
+/**
+ * isDelimiter - determines if a character is a delimiter
+ * @c: a character
+ *
+ * Return: 1 if true, 0 if false
+ */
 int isDelimiter(char c)
 {
 	if (c == ';' || c == '\n' || c == '\0')

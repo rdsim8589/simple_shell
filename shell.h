@@ -47,18 +47,20 @@ typedef struct hist_s
 	char *entry;
 	struct hist_s *next;
 } hist_t;
+
 /**
  * struct helper_s - a helper struct
+ * @bufhead: ptr to the start of the buffer
  * @hist_head: head to the hist linked list
  * @env: head to the env hist linke list
- * @total:
- * @bufsize:
- * @printed:
- * @last:
- * @pid:
- * @lastExit;
- * @file:
- * @type:
+ * @total: the total bytes read from get_line
+ * @bufsize: the bufsize
+ * @printed: the number of bytes that have printed
+ * @last: holds the index for the start of the next line
+ * @pid: the pid
+ * @lastExit: the status of a fork
+ * @file: holds the value of the file descriptor
+ * @type: if file is in terminal or a pipe
  *
  * Description:
  */

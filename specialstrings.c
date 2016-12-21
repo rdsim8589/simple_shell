@@ -15,26 +15,26 @@ char *splitstr(char *str, const char *delim, char **saveptr)
 	char *tok;
 	int i;
 
-	if (str == NULL) /*if str is null, we check saveptr*/
+	if (str == NULL)
 	{
-		if (*saveptr == NULL) /*if saveptr is also null, we're done*/
+		if (*saveptr == NULL)
 			return (NULL);
-		str = *saveptr; /*if saveptr isn't null, let's drag it back up */
+		str = *saveptr;
 	}
 	i = 0;
-	tok = str; /* tok will start where str starts now */
+	tok = str;
 	while (*str != '\0' && *str != EOF && *str != *delim)
 	{
-		str++; /* we could check here for additional delims each time we rotate! */
-		i++; /* for multiple delim setup (when we want to use ;, etc) */
+		str++;
+		i++;
 	}
-	if (*str == '\0') /* null found, this is our last word */
+	if (*str == '\0')
 		*saveptr = NULL;
 	else
 		if (saveptr != NULL)
-			*saveptr = str + 1; /* save the letter after the null */
+			*saveptr = str + 1;
 	tok[i] = '\0';
-	return (tok); /* return a pointer to our new token */
+	return (tok);
 }
 
 /**
