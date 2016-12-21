@@ -7,47 +7,31 @@
  */
 int helpBuiltIn(char *file)
 {
-	if (file == NULL)
+	if (file == NULL || file[0] == '\0')
 	{
 		_putstring("Select a built-in: alias, cd, env, exit,");
-		_putstring(" help, history, setenv, unsetenv \n");
+		_putstring(" help, history, setenv, unsetenv\n");
 		return (-1);
 	}
 	if (_strcmp(file, "exit") == 0)
-	{
 		helpExit();
-	}
-	else if (_strcmp(file, "env")== 0)
-	{
+	else if (_strcmp(file, "env") == 0)
 		helpEnv();
-	}
 	else if (_strcmp(file, "setenv") == 0)
-	{
 		helpSetEnv();
-	}
 	else if	(_strcmp(file, "unsetenv") == 0)
-	{
 		helpUnsetEnv();
-	}
 	else if (_strcmp(file, "cd") == 0)
-	{
 		helpCD();
-	}
 	else if (_strcmp(file, "help") == 0)
-	{
 		helpHelp();
-	}
 	else if (_strcmp(file, "alias") == 0)
-	{
 		helpAlias();
-	}
 	else if (_strcmp(file, "history") == 0)
-	{
 		helpHistory();
-	}
 	else
 	{
-		_putstring("not a built-in of simple_shell");
+		_putstring("Not a built-in of simple_shell.\n");
 		return (-1);
 	}
 	return (1);

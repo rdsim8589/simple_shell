@@ -1,6 +1,6 @@
 #include "shell.h"
 /**
- * helpExit - prints the exit help
+ * helpHelp - prints the help... help...
  */
 void helpHelp(void)
 {
@@ -27,13 +27,13 @@ void helpAlias(void)
 {
 	_putstring("alias: alias [name[=value] ... ]\n\n");
 
-        _putstring("  Define or display aliases.\n\n");
+	_putstring("  Define or display aliases.\n\n");
 
 	_putstring("  Without arguments, `alias' prints the list of aliases\n");
 	_putstring("  in the reusable form `alias NAME=VALUE' on standard\n");
 	_putstring("  output. Otherwise, an alias is defined for each NAME\n");
-	_putstring("  whose VALUE is given. A trailing space in VALUE \n");
-	_putstring("  causes the next word to be checked for alias \n");
+	_putstring("  whose VALUE is given. A trailing space in VALUE\n");
+	_putstring("  causes the next word to be checked for alias\n");
 	_putstring("  substitution when the alias is expanded.\n\n");
 
 	_putstring("  Exit Status:\n");
