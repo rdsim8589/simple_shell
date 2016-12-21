@@ -167,7 +167,8 @@ void helpHistory(void);
 
 
 void sighandler(int signum);
-
+char *_memset(char *s, char b, unsigned int n);
+char *_strcat(char *dest, char *src);
 helper_t *setupMain(int argc, char **argv, char **envp);
 int checkLocal(char *tok, helper_t *helper, char *save);
 char *bufferDelete(char *buf, helper_t *helper, int index, int times);
