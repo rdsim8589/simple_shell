@@ -16,7 +16,7 @@ int main(int argc, char *argv[], char *envp[])
 	char delim = ' ';
 	env_t *head;
 	helper_t *helper;
-	int file, cstatus, type;
+	int file, type;
 	hist_t *hist_head;
 	struct stat st;
 
@@ -65,7 +65,7 @@ int main(int argc, char *argv[], char *envp[])
 					    (st.st_mode & S_IXUSR) && S_ISREG(st.st_mode))
 					{
 						args = getArgs(tok, argv, save);
-						cstatus = runProg(tok, args, head);
+						helper->lastExit = runProg(tok, args, head);
 					}
 					else
 					{
@@ -77,8 +77,8 @@ int main(int argc, char *argv[], char *envp[])
 				}
 				else
 				{
-					cstatus = checkPath(tok, args, save, head);
-					if (cstatus == 0)
+					helper->lastExit = checkPath(tok, args, save, head, helper);
+					if (helper->lastExit == 0)
 					{
 						_putstring(tok);
 						_putstring(": command not found.\n");
@@ -181,6 +181,7 @@ helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid)
 	helper->last = malloc(sizeof(int) * 1);
 	*(helper->last) = 0;
 	helper->pid = pid;
+	helper->lastExit = 0;
 
 	return (helper);
 }
@@ -196,7 +197,7 @@ helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid)
  *
  * Return: returns 1 if program ran, 0 if some sort of error
  */
-int checkPath(char *inp, char *argv[], char *save, env_t *head)
+int checkPath(char *inp, char *argv[], char *save, env_t *head, helper_t *helper)
 {
 	int j;
 	char *temp, *path[PATHSIZE], *tok, **args, *pathsave, *paths, *cwd;
@@ -231,7 +232,7 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head)
 			if (access(temp, X_OK) == 0)
 			{
 				args = getArgs(tok, argv, save);
-				runProg(temp, args, head);
+				helper->lastExit = runProg(temp, args, head);
 				break;
 			}
 			if (temp != NULL)

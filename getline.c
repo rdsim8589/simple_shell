@@ -17,7 +17,7 @@ char *get_line(int file, helper_t *helper)
 
 	buf = malloc(sizeof(char) * (*helper->bufsize));
 	memset(buf, '\0', (*helper->bufsize));
-	readval = read(file, buf, 1024);
+	readval = read(file, buf, *helper->bufsize);
 	(*helper->total) = readval;
 	if (readval == 0)
 		exitBuiltin("0", buf, &helper->env, helper);
@@ -36,6 +36,7 @@ char *get_line(int file, helper_t *helper)
 		add_hist((*helper->total + 1), &helper->hist_head, buf);
 	buf[(*helper->total) - 1] = '\0';
 	buf = whitespace(buf, helper); buf = parseDollar(buf, helper);
+	buf = parseComments(buf, helper);
 	for (i = 0; i < (*helper->total); i++)
 	{
 		if (buf[i] == EOF)
