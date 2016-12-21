@@ -1,6 +1,6 @@
 # simple_shell
 A simple shell created for Holberton School. Partner project with @rdsim8589 &amp; @wintermanc3r
-.\" Contact timothy.britton@holbertonschool.com or richard.sim@holbertonschool to correct errors or typos.
+.\" Contact timothy.britton@holbertonschool.com or richard.sim@holbertonschool.com to correct errors or typos.
 
 
 ## simple_shell - simple_shell is an sh-compatible command language interpreter that executes commands from the stand input or from a file.
@@ -77,35 +77,35 @@ The unsetenv() built-in deletes the variable name from the environment. If name 
 If name is specified, the shell removes that alias.  If -a is specified, all aliases are removed.
 
 ### Environment
-HOME       Set automatically by login(1) from the user's login directory in the password file (passwd(4)).  This environment variable also functions as the default argument for the cd builtin.
+####HOME       Set automatically by login(1) from the user's login directory in the password file (passwd(4)).  This environment variable also functions as the default argument for the cd builtin.
 
-PATH       The default search path for executables.  See the above section Path Search.
+####PATH       The default search path for executables.  See the above section Path Search.
 
-CDPATH     The search path used with the cd builtin.
+####CDPATH     The search path used with the cd builtin.
 
-MAIL       The name of a mail file, that will be checked for the arrival of new mail.  Overridden by MAILPATH.
+####MAIL       The name of a mail file, that will be checked for the arrival of new mail.  Overridden by MAILPATH.
 
-MAILCHECK  The frequency in seconds that the shell checks for the arrival of mail in the files specified by the MAILPATH or the MAIL file.  If set to 0, the check will occur at each prompt.
+####MAILCHECK  The frequency in seconds that the shell checks for the arrival of mail in the files specified by the MAILPATH or the MAIL file.  If set to 0, the check will occur at each prompt.
 
-MAILPATH   A colon “:” separated list of file names, for the shell to check for incoming mail.  This environment setting overrides the MAIL setting.  There is a maximum of 10 mailboxes that can be monitored at once.
+####MAILPATH   A colon “:” separated list of file names, for the shell to check for incoming mail.  This environment setting overrides the MAIL setting.  There is a maximum of 10 mailboxes that can be monitored at once.
 
-PS1        The primary prompt string, which defaults to “$ ”, unless you are the superuser, in which case it defaults to “# ”.
+####PS1        The primary prompt string, which defaults to “$ ”, unless you are the superuser, in which case it defaults to “# ”.
 
-PS2        The secondary prompt string, which defaults to “> ”.
+####PS2        The secondary prompt string, which defaults to “> ”.
 
-PS4        Output before each line when execution trace (set -x) is enabled, defaults to “+ ”.
+####PS4        Output before each line when execution trace (set -x) is enabled, defaults to “+ ”.
 
-IFS        Input Field Separators.  This is normally set to ⟨space⟩, ⟨tab⟩, and ⟨newline⟩.  See the White Space Splitting section for more details.
+####IFS        Input Field Separators.  This is normally set to ⟨space⟩, ⟨tab⟩, and ⟨newline⟩.  See the White Space Splitting section for more details.
 
-TERM       The default terminal setting for the shell.  This is inherited by children of the shell, and is used in the history editing modes.
+####TERM       The default terminal setting for the shell.  This is inherited by children of the shell, and is used in the history editing modes.
 
-HISTSIZE   The number of lines in the history buffer for the shell.
+####HISTSIZE   The number of lines in the history buffer for the shell.
 
-PWD        The logical value of the current working directory.  This is set by the cd command.
+####PWD        The logical value of the current working directory.  This is set by the cd command.
 
-OLDPWD     The previous logical value of the current working directory.  This is set by the cd command.
+####OLDPWD     The previous logical value of the current working directory.  This is set by the cd command.
 
-PPID       The process ID of the parent process of the shell.
+####PPID       The process ID of the parent process of the shell.
 
 .SH BUGS
 No known bugs.
