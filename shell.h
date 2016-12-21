@@ -68,6 +68,7 @@ typedef struct helper_s
 	int *printed;
 	int *last;
 	char *pid;
+	int lastExit;
 } helper_t;
 
 
@@ -105,7 +106,7 @@ env_t *getEnvPtr(char *name, env_t *head);
 
 /* main.c prototypes */
 helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid);
-int checkPath(char *inp, char *argv[], char *save, env_t *head);
+int checkPath(char *inp, char *argv[], char *save, env_t *head, helper_t *helper);
 void freeArgs(char **args, int envsize);
 char **getArgs(char *tok, char *argv[], char *save);
 int runProg(char *name, char *argv[], env_t *head);
@@ -159,4 +160,8 @@ void helpHelp(void);
 void helpAlias(void);
 void helpHistory(void);
 
+
+char *bufferDelete(char *buf, helper_t *helper, int index);
+char *parseComments(char *buf, helper_t *helper);
+int isDelimiter(char c);
 #endif

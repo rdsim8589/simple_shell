@@ -10,40 +10,23 @@
 char *whitespace(char *buf, helper_t *helper)
 {
 	unsigned int i;
-	char *newbuf;
 
-	newbuf = NULL;
 	for (i = 0; i <= *helper->total && buf[i] != '\0'; i++)
 	{
 		for (i = i; buf[i] == ' '; i++)
 		{
 			if (i == 0 || buf[i - 1] == '\n')
 				while (buf[i] == ' ')
-				{
-					newbuf = sliceString(buf, helper->bufsize, 1, i);
-					*helper->total = *helper->total - 1;
-					*helper->printed = *helper->printed - 1;
-					buf = newbuf;
-				}
+					buf = bufferDelete(buf, helper, i);
 			if (i == 0 && (buf[i + 1] == ';' || buf[i + 1] == '\0' ||
 				       buf[i + 1] == ' ' || buf[i + 1] == '\n'))
 			{
 				while (buf[i] == ' ')
-				{
-					newbuf = sliceString(buf, helper->bufsize, 1, i);
-					*helper->total = *helper->total - 1;
-					*helper->printed = *helper->printed - 1;
-					buf = newbuf;
-				}
+					buf = bufferDelete(buf, helper, i);
 			}
 			else if (i > 0 && buf[i] == ' '  && buf[i - 1] == ';')
 				while (buf[i] == ' ')
-				{
-					newbuf = sliceString(buf, helper->bufsize, 1, i);
-					*helper->total = *helper->total - 1;
-					*helper->printed = *helper->printed - 1;
-					buf = newbuf;
-				}
+					buf = bufferDelete(buf, helper, i);
 		}
 	}
 	return (buf);
@@ -69,8 +52,7 @@ char *parseDollar(char *buf, helper_t *helper)
 		if (buf[i] == '$')
 		{
 			start = i + 1; j = 0; i++;
-			while (buf[i] != ' ' && buf[i] != '\n' && buf[i] != '\0'
-			       && buf[i] != '$' && buf[i] != ';')
+			while (!isDelimiter(buf[i]) && buf[i] != ' ' && buf[i] != '$')
 			{
 				i++; j++;
 			}
@@ -99,6 +81,46 @@ char *parseDollar(char *buf, helper_t *helper)
 		}
 	}
 	return (buf);
+}
+
+char *parseComments(char *buf, helper_t *helper)
+{
+	int i;
+
+	for (i = 0; i < _strlen(buf); i++)
+	{
+		if (buf[i] == '#')
+		{
+			if (i == 0 || isDelimiter(buf[i - 1]) || buf[i - 1] == ' ')
+			{
+				while (!isDelimiter(buf[i]) && _strlen(buf) > i)
+					{
+						buf = bufferDelete(buf, helper, i);
+					}
+			}
+		}
+	}
+	return (buf);
+}
+
+char *bufferDelete(char *buf, helper_t *helper, int index)
+{
+	char *newbuf;
+
+	newbuf = sliceString(buf, helper->bufsize, 1, index);
+	*helper->total = *helper->total - 1;
+	*helper->printed = *helper->printed - 1;
+	buf = newbuf;
+
+	return (buf);
+}
+
+int isDelimiter(char c)
+{
+	if (c == ';' || c == '\n' || c == '\0')
+		return (1);
+	else
+		return (0);
 }
 
 /**
