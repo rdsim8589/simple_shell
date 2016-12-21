@@ -23,7 +23,7 @@ char *whitespace(char *buf, helper_t *helper)
 			{
 				while (buf[i] == ' ')
 					buf = bufferDelete(buf, helper, i, 1);
-			}
+n			}
 			else if (i > 0 && buf[i] == ' '  && buf[i - 1] == ';')
 				while (buf[i] == ' ')
 					buf = bufferDelete(buf, helper, i, 1);
