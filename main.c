@@ -85,7 +85,7 @@ int main(int argc, char *argv[], char *envp[])
 					}
 				}
 			}
-			inp = get_line(file, helper);
+			inp = moreLines(helper, inp);
 			save = NULL;
 		}
 		if (inp == NULL && (argc == 2 || type == 0))
@@ -203,7 +203,10 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head)
 	if (getEnvPtr("PATH", head) != NULL)
 	{
 		if (inp == NULL || inp[0] == '\0')
+		{
+			free(cwd);
 			return (-1);
+		}
 		j = 0;
 		paths = _strdup((getEnvPtr("PATH", head))->value); /* tmp to avoid mangling env */
 		tok = splitstr(paths, &colon, &pathsave);
@@ -242,10 +245,10 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head)
 			return (0); /* Need to free 2d array for path either way, on return 1 or 0! */
 		}
 	}
+	free(cwd);
 	free(paths);
 	if (temp != NULL)
 		free(temp);
-	free(cwd);
 	return (1);
 
 }

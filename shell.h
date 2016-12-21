@@ -60,6 +60,7 @@ typedef struct hist_s
  */
 typedef struct helper_s
 {
+	char *bufhead;
 	hist_t *hist_head;
 	env_t *env;
 	long *total;
@@ -69,6 +70,8 @@ typedef struct helper_s
 	char *pid;
 } helper_t;
 
+
+char *moreLines(helper_t *helper, char *buf);
 
 /* builtins */
 void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper);

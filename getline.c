@@ -8,111 +8,87 @@
  * @helper: helper_t helper struct
  *
  * Return: returns a pointer to the new buff
- *
- * TODO: NEED TO SPLIT INTO 2 FUNCTIONS
- * ONE TO RUN INITIALLY, ONE THAT RUNS AFTER TIL NULL
  */
 char *get_line(int file, helper_t *helper)
 {
-	char *newbuf, *readbuf;
+	char *newbuf, *readbuf, *buf;
 	long readval;
-	int i, *bufsize;
-	hist_t **hist_head;
-	static long *total;
-	static int *printed;
-	static int *last;
-	static char *buf, *bufhead;
+	int i;
 
-	last = helper->last; total = helper->total;
-	printed = helper->printed; hist_head = &helper->hist_head;
-	bufsize = helper->bufsize; /*bufsize starts at 1024*/
-
-	if (*total == 0)
+	buf = malloc(sizeof(char) * (*helper->bufsize));
+	memset(buf, '\0', (*helper->bufsize));
+	readval = read(file, buf, 1024);
+	(*helper->total) = readval;
+	if (readval == 0)
+		exitBuiltin("0", buf, &helper->env, helper);
+	while (readval >= 1024)
 	{
-		*bufsize = 1024; *printed = 0;
-		buf = malloc(sizeof(char) * *bufsize);
-		memset(buf, '\0', *bufsize);
-		readval = read(file, buf, 1024);
-		*total = readval; /*total is the total we've read, static*/
-		if (readval == 0)
-		{
-			_putstring("Goodbye!\n");
-			exitBuiltin("0", buf, &helper->env, helper);
-		}
-		while (readval >= 1024) /*if we read 1024, there's more in stdin*/
-		{
-			readbuf = malloc(1024);
-			readval = read(file, readbuf, 1024); /*read more*/
-			newbuf = malloc(*bufsize + 1024);
-			memset(newbuf, '\0', *bufsize + 1024);
-			newbuf = _memcpy(newbuf, buf, *bufsize);
-			_memcpy(newbuf + *bufsize, readbuf, 1024);
-			free(buf);
-			buf = newbuf;
-			free(readbuf);
-			*total += readval; /*add the readval to the total we've read*/
-			*bufsize += 1024;
-		}
-		if (buf[0] != '\0')
-			add_hist(*total + 1, hist_head, buf);
-		bufhead = buf; /*bufhead is a ptr to the beginning of the buffer*/
+		readbuf = malloc(1024);
+		readval = read(file, readbuf, 1024);
+		newbuf = malloc((*helper->bufsize) + 1024);
+		memset(newbuf, '\0', (*helper->bufsize) + 1024);
+		newbuf = _memcpy(newbuf, buf, (*helper->bufsize));
+		_memcpy(newbuf + (*helper->bufsize), readbuf, 1024);
+		free(buf); buf = newbuf; free(readbuf);
+		(*helper->total) += readval; (*helper->bufsize) += 1024;
 	}
-	else
-	{
-		while (buf[0] == ';')
-		{
-			buf += 1;
-			*total -= 1;
-			*printed -= 1;
-		}
-		buf += *last; /*if this isn't the first time around, advance buf ptr*/
-		if (buf[0] == '\0')
-			buf++;
-		if (*printed >= *total) /*if this is true, we're done with this buffer*/
-		{
-			*printed = 0; *total = 0;
-			free(bufhead);
-			return (NULL);
-		}
-		i = 0;
-		while (buf[i] != '\0') /*figure out how many chars we're printing*/
-		{
-			i++;
-		}
-		*last = i + 1; /*this is where we need buf to be next, +1 for the '\0'*/
-		*printed += i + 1; /*total count on how many we've printed*/
-
-		return(buf);
-	}
-	buf[*total - 1] = '\0';
-	buf = whitespace(buf, helper);
-	i = 0;
-	buf = parseDollar(buf, helper);
-	while (i < *total) /*run through and find ';' and '\n'*/
+	if (buf[0] != '\0')
+		add_hist((*helper->total + 1), &helper->hist_head, buf);
+	buf[(*helper->total) - 1] = '\0';
+	buf = whitespace(buf, helper); buf = parseDollar(buf, helper);
+	for (i = 0; i < (*helper->total); i++)
 	{
 		if (buf[i] == EOF)
-		{
 			buf[i] = '\0';
-		}
 		if (buf[i] == ';')
-		{
 			buf[i] = '\0';
-		}
 		else if (buf[i] == '\n')
-		{
 			buf[i] = '\0';
-		}
-		i++;
 	}
+	for (i = 0; buf[i] != '\0'; i++)
+		;
+	(*helper->last) = i + 1; (*helper->printed) += i + 1;
+	helper->bufhead = buf;
+	return (buf);
+}
+
+
+/**
+ * moreLines - helper func for getline. Ran to check to see if there is
+ * unprinted lines left in the buffer.
+ *
+ * @helper: helper struct
+ * @buf: buffer
+ * Return: Returns a pointer to the next line, or NULL if there are no more
+ */
+char *moreLines(helper_t *helper, char *buf)
+{
+	int i;
+
+	while (buf[0] == ';')
+	{
+		buf += 1;
+		(*helper->total) -= 1;
+		(*helper->printed) -= 1;
+	}
+	buf += (*helper->last);
+	if (buf[0] == '\0')
+		buf++;
+	if ((*helper->printed) >= (*helper->total))
+	{
+		(*helper->printed) = 0;
+		(*helper->total) = 0;
+		free(helper->bufhead);
+		return (NULL);
+		}
 	i = 0;
- 	while (buf[i] != '\0') /*figure out how many chars we're printing*/
+	while (buf[i] != '\0')
 	{
 		i++;
 	}
-	*last = i + 1; /*this is where we need buf to be next, +1 for the '\0'*/
-	*printed += i + 1; /*total count on how many we've printed*/
-	bufhead = buf;
-	return (buf); /* return buf */
+	(*helper->last) = i + 1;
+	(*helper->printed) += i + 1;
+	return (buf);
 }
 
 /**
@@ -143,6 +119,16 @@ char *innerCat(char *buf, char *string, int *bufsize, int insert)
 	return (newbuf);
 }
 
+/**
+ * sliceString - Cuts a substring out of a string and resizes it
+ *
+ * @buf: buffer to work with
+ * @bufsize: size of buffer
+ * @slicesize: size of the slice to be taken out
+ * @index: where to slice in the buffer
+ *
+ * Return: Returns a resized buffer.
+ */
 char *sliceString(char *buf, int *bufsize, int slicesize, int index)
 {
 	char *newbuf;
@@ -154,20 +140,10 @@ char *sliceString(char *buf, int *bufsize, int slicesize, int index)
 	_memcpy(newbuf, buf, index);
 	if (buf[index + slicesize] != '\0')
 	{
-		_memcpy(newbuf + index, buf + index + slicesize, *bufsize - index - slicesize);
+		_memcpy(newbuf + index, buf + index + slicesize,
+			*bufsize - index - slicesize);
 	}
 	*bufsize = newsize;
 	free(buf);
 	return (newbuf);
-}
-
-char *expandBuffer(char *buf, int bufsize, int newsize)
-{
-	char *newbuf;
-
-	newbuf = malloc(newsize * sizeof(char));
-	memcpy(newbuf, buf, bufsize);
-	free(buf);
-	buf = newbuf;
-	return (buf);
 }
