@@ -1,51 +1,12 @@
 #include "shell.h"
-
-helper_t *setupMain(int argc, char **argv, char **envp)
-{
-	char *pid;
-	env_t *head;
-	hist_t *hist_head;
-	helper_t *helper;
-
-	pid = _getpid();
-	hist_head = NULL;
-	head = NULL;
-
-	if (argc > 2 || argv == NULL || envp == NULL)
-	{
-		_putstring("Please run with no argument, or one argument to run from script.");
-		_exit(9);
-	}
-
-	initEnvList(envp, &head);
-	hist_head = pull_hist(&hist_head, head);
-	helper = initHelper(head, hist_head, pid);
-
-	if (argc == 1)
-		helper->file = STDIN_FILENO;
-	else if (argc == 2)
-	{
-		helper->file = open(argv[1], O_RDONLY);
-		if (helper->file == -1)
-		{
-			_putstring("Error opening script file: ");
-			_putstring(argv[1]);
-			_putchar('\n');
-			_exit(9);
-		}
-	}
-
-	helper->type = getTermType(helper->file);
-
-	return (helper);
-}
-
 /**
  * main - entry point for shell program
  * loops input for a shell, splits them into appropriate actions
  *
  * @argc: argument count
  * @argv: arguments passed
+ * @envp: list of environment names and their values
+ *
  * Return: return values in man page
  */
 int main(int argc, char *argv[], char *envp[])
@@ -89,6 +50,54 @@ int main(int argc, char *argv[], char *envp[])
 		}
 	}
 }
+
+/**
+ * setupMain - a helper struct to carry data
+ * @argc: arugment count
+ * @argv: arguements passed
+ * @envp: list of environment names and their values
+ *
+ */
+helper_t *setupMain(int argc, char **argv, char **envp)
+{
+	char *pid;
+	env_t *head;
+	hist_t *hist_head;
+	helper_t *helper;
+
+	pid = _getpid();
+	hist_head = NULL;
+	head = NULL;
+
+	if (argc > 2 || argv == NULL || envp == NULL)
+	{
+		_putstring("Please run with no argument, or one argument to run from script.");
+		_exit(9);
+	}
+
+	initEnvList(envp, &head);
+	hist_head = pull_hist(&hist_head, head);
+	helper = initHelper(head, hist_head, pid);
+
+	if (argc == 1)
+		helper->file = STDIN_FILENO;
+	else if (argc == 2)
+	{
+		helper->file = open(argv[1], O_RDONLY);
+		if (helper->file == -1)
+		{
+			_putstring("Error opening script file: ");
+			_putstring(argv[1]);
+			_putchar('\n');
+			_exit(9);
+		}
+	}
+
+	helper->type = getTermType(helper->file);
+
+	return (helper);
+}
+
 
 /**
  *
