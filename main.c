@@ -146,7 +146,12 @@ int checkBuiltins(char *inp, char *save, env_t **environ, helper_t *helper)
 
 	return (1);
 }
-
+/**
+ * getTermType - checks if file is in terminal, or if file is has a pipe
+ * @file: typically STDIN_FILENO
+ *
+ * Return: 1 if in terminal, 0 if pipe and -1 if fail
+ */
 int getTermType(int file)
 {
 	struct stat st;
