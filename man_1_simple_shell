@@ -76,8 +76,7 @@ The unsetenv() built-in deletes the variable name from the environment. If name 
 If name is specified, the shell removes that alias.  If -a is specified, all aliases are removed.
 
 .SS Environment
-HOME       Set automatically by login(1) from the user's login directory in the password file (passwd(4)).  This environment variable also functions as the default argument for
-                the cd builtin.
+HOME       Set automatically by login(1) from the user's login directory in the password file (passwd(4)).  This environment variable also functions as the default argument for the cd builtin.
 
 PATH       The default search path for executables.  See the above section Path Search.
 
