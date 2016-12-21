@@ -166,6 +166,8 @@ void helpAlias(void);
 void helpHistory(void);
 
 
+char *_memset(char *s, char b, unsigned int);
+
 void sighandler(int signum);
 
 helper_t *setupMain(int argc, char **argv, char **envp);
@@ -174,4 +176,6 @@ char *bufferDelete(char *buf, helper_t *helper, int index, int times);
 char *parseComments(char *buf, helper_t *helper);
 int isDelimiter(char c);
 int isWhitespace(char c);
+
+char *_strcat(char *dest, char *src);
 #endif

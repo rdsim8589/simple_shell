@@ -15,7 +15,7 @@ char *get_line(int file, helper_t *helper)
 	long readval;
 
 	buf = malloc(sizeof(char) * (*helper->bufsize));
-	memset(buf, '\0', (*helper->bufsize));
+	_memset(buf, '\0', (*helper->bufsize));
 	readval = read(file, buf, *helper->bufsize);
 	(*helper->total) = readval;
 	if (readval == 0)
@@ -25,7 +25,7 @@ char *get_line(int file, helper_t *helper)
 		readbuf = malloc(1024);
 		readval = read(file, readbuf, 1024);
 		newbuf = malloc((*helper->bufsize) + 1024);
-		memset(newbuf, '\0', (*helper->bufsize) + 1024);
+		_memset(newbuf, '\0', (*helper->bufsize) + 1024);
 		newbuf = _memcpy(newbuf, buf, (*helper->bufsize));
 		_memcpy(newbuf + (*helper->bufsize), readbuf, 1024);
 		free(buf); buf = newbuf; free(readbuf);
@@ -128,7 +128,7 @@ char *innerCat(char *buf, char *string, int *bufsize, int insert)
 	newsize = *bufsize + _strlen(string);
 
 	newbuf = malloc(newsize * sizeof(char));
-	memset(newbuf, '\0', newsize);
+	_memset(newbuf, '\0', newsize);
 	_memcpy(newbuf, buf, insert);
 	_memcpy(newbuf + insert, string, _strlen(string));
 	_memcpy(newbuf + insert  + _strlen(string), buf + insert, *bufsize - insert);
@@ -154,7 +154,7 @@ char *sliceString(char *buf, int *bufsize, int slicesize, int index)
 
 	newsize = *bufsize - slicesize;
 	newbuf = malloc(newsize * sizeof(char));
-	memset(newbuf, '\0', newsize);
+	_memset(newbuf, '\0', newsize);
 	_memcpy(newbuf, buf, index);
 	if (buf[index + slicesize] != '\0')
 	{
