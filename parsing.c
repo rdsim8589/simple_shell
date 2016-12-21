@@ -52,26 +52,30 @@ char *parseDollar(char *buf, helper_t *helper)
 		if (buf[i] == '$')
 		{
 			start = i + 1; j = 0; i++;
-			while (!isDelimiter(buf[i]) && (!isWhitespace(buf[i])) && buf[i] != '$')
+			while (!isDelimiter(buf[i]) && (!isWhitespace(buf[i]))
+			       && (_isalphanum(buf[i])) && buf[i] != '$' && buf[i] != '?')
 			{
 				i++; j++;
 			}
-			name = malloc((j + 1) * (sizeof(char)));
-			j = 0;
-			k = start;
-			while (k != i)
-				name[j++] = buf[k++];
-			name[j] = '\0';
-			envname = getEnvPtr(name, env);
-			if (envname == NULL)
-				buf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
-			else
+			if (j != 0)
 			{
-				value = envname->value;
-				newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
-				buf = innerCat(newbuf, value, helper->bufsize, start - 1);
+				name = malloc((j + 1) * (sizeof(char)));
+				j = 0;
+				k = start;
+				while (k != i)
+					name[j++] = buf[k++];
+				name[j] = '\0';
+				envname = getEnvPtr(name, env);
+				if (envname == NULL)
+					buf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
+				else
+				{
+					value = envname->value;
+					newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
+					buf = innerCat(newbuf, value, helper->bufsize, start - 1);
+				}
+				free(name);
 			}
-			free(name);
 		}
 		if (start != 0)
 		{
@@ -177,4 +181,18 @@ char *_getpid(void)
 	_memcpy(newbuf, tok, _strlen(tok) + 1);
 	free(buf);
 	return (newbuf);
+}
+
+/**
+ * _isalphanum - returns 1 if number is an alphanumeric character, 0 if not
+ *
+ * @c: int to check for alphanumericalness
+ * Return: 1 if alphanumeric, 0 otherwise.
+ */
+int _isalphanum(int c)
+{
+	if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+		return (1);
+	else
+		return (0);
 }

@@ -166,6 +166,8 @@ void helpAlias(void);
 void helpHistory(void);
 
 
+int _isalphanum(int c);
+
 void sighandler(int signum);
 char *_memset(char *s, char b, unsigned int n);
 char *_strcat(char *dest, char *src);
