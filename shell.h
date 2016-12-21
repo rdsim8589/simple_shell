@@ -51,10 +51,14 @@ typedef struct hist_s
  * struct helper_s - a helper struct
  * @hist_head: head to the hist linked list
  * @env: head to the env hist linke list
- * @total: an int of the total number of bytes read
- * @bufsize: an int of the bufsize
- * @printed: 
+ * @total:
+ * @bufsize:
+ * @printed:
  * @last:
+ * @pid:
+ * @lastExit;
+ * @file:
+ * @type:
  *
  * Description:
  */
