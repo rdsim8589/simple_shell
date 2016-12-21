@@ -22,11 +22,11 @@
 
 /**
  * struct env_s - a singly linked list
- * @name:
-n * @value:
- * @next:
+ * @name: the environment variable
+ * @value: the environment variable value
+ * @next: the pointer to the next node of struct env_s
  *
- * Description:
+ * Description: the struct that stores the environment variables
  */
 typedef struct env_s
 {
@@ -51,9 +51,9 @@ typedef struct hist_s
  * struct helper_s - a helper struct
  * @hist_head: head to the hist linked list
  * @env: head to the env hist linke list
- * @total:
- * @bufsize:
- * @printed:
+ * @total: an int of the total number of bytes read
+ * @bufsize: an int of the bufsize
+ * @printed: 
  * @last:
  *
  * Description:
