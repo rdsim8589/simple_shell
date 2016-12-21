@@ -45,7 +45,7 @@ char *parseDollar(char *buf, helper_t *helper)
 	char *name, *newbuf, *value;
 	env_t *envname, *env;
 	int i, j, k, start;
-
+	long change;
 	start = 0; env = helper->env;
 	for (i = 0; i < _strlen(buf); i++)
 	{
@@ -64,12 +64,21 @@ char *parseDollar(char *buf, helper_t *helper)
 			name[j] = '\0';
 			envname = getEnvPtr(name, env);
 			if (envname == NULL)
-				buf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
+			{
+				newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
+				free(helper->inphead);
+				buf = newbuf;
+				helper->inphead = buf;
+			}
 			else
 			{
+				change = 0;
 				value = envname->value;
 				newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
 				buf = innerCat(newbuf, value, helper->bufsize, start - 1);
+				free(newbuf);
+				free(helper->inphead);
+				(helper->inphead) = buf;
 			}
 			free(name);
 		}

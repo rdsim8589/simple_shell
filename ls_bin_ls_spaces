@@ -1,0 +1,11 @@
+# run ls
+command="ls
+
+
+ /bin/ls 
+
+
+     ls
+ls     
+ ls     "
+echo "$command" | ./simple_shell

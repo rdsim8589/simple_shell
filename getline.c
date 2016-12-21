@@ -18,8 +18,10 @@ char *get_line(int file, helper_t *helper)
 	_memset(buf, '\0', (*helper->bufsize));
 	readval = read(file, buf, *helper->bufsize);
 	(*helper->total) = readval;
-	if (readval == 0)
+	if (readval == 0 && helper->type == 0)
+	{
 		exitBuiltin("0", buf, helper);
+	}
 	while (readval >= 1024)
 	{
 		readbuf = malloc(1024);
@@ -36,26 +38,35 @@ char *get_line(int file, helper_t *helper)
 		add_hist((*helper->total + 1), &helper->hist_head, buf);
 	buf = whitespace(buf, helper);
 	buf = parseComments(buf, helper);
-	buf = parseDollar(buf, helper);
 	countBuf(buf, helper);
-	parseDelimiters(buf, helper);
+	buf = parseDelimiters(buf, helper);
 	helper->bufhead = buf;
 	return (buf);
 }
 
 char *parseDelimiters(char *buf, helper_t *helper)
 {
-	int i;
+	int i, j;
 
-	for (i = 0; i < *helper->total; i++)
+	for (i = 0, j = 0; i < *helper->total; i++)
 	{
 		if (buf[i] == EOF)
+		{
 			buf[i] = '\0';
+			j++;
+		}
 		if (buf[i] == ';')
+		{
 			buf[i] = '\0';
+			j++;
+		}
 		else if (buf[i] == '\n')
+		{
 			buf[i] = '\0';
+			j++;
+		}
 	}
+	(helper->linecount) = j + 1;
 	return (buf);
 }
 
@@ -71,12 +82,23 @@ void countBuf(char *buf, helper_t *helper)
 
 void countLine(char *buf, helper_t *helper)
 {
-	int i;
+	int i, j;
 
-	for (i = 0; buf[i] != '\0'; i++)
+	i = *helper->last;
+	for (i; buf[i] != '\0'; i++)
 		;
-	(*helper->last) = i + 1;
-	(*helper->printed) += i + 1;
+	j = i;
+	if (buf[i + 1] == '\0' && i < *helper->total)
+	{
+		helper->linecount -= 1;
+	}
+	while (buf[i + 1] == '\0' && i < *helper->total)
+	{
+		i++;
+	}
+	*(helper->printed) += i + 1;
+	*(helper->last) = i + 1;
+	(helper->bufnext) = (helper->bufhead) + (*helper->last);
 }
 
 
@@ -88,25 +110,21 @@ void countLine(char *buf, helper_t *helper)
  * @buf: buffer
  * Return: Returns a pointer to the next line, or NULL if there are no more
  */
-char *moreLines(helper_t *helper, char *buf)
+char *moreLines(helper_t *helper, char *buf, char *inp)
 {
-	while (buf[0] == ';')
+	(helper->linecount)--;
+ 	if (helper->linecount == 0)
 	{
-		buf += 1;
-		(*helper->total) -= 1;
-		(*helper->printed) -= 1;
-	}
-	buf += (*helper->last);
-	if (buf[0] == '\0')
-		buf++;
-	if ((*helper->printed) >= (*helper->total))
-	{
+		free(helper->inphead);
+		free(helper->bufhead);
 		(*helper->printed) = 0;
 		(*helper->total) = 0;
-		free(helper->bufhead);
 		return (NULL);
-		}
-	return (buf);
+	}
+	inp = helper->bufnext;
+	if (*inp == '\0')
+		inp++;
+	return (inp);
 }
 
 /**
@@ -133,7 +151,6 @@ char *innerCat(char *buf, char *string, int *bufsize, int insert)
 	_memcpy(newbuf + insert, string, _strlen(string));
 	_memcpy(newbuf + insert  + _strlen(string), buf + insert, *bufsize - insert);
 	*bufsize = newsize;
-	free(buf);
 	return (newbuf);
 }
 
@@ -162,6 +179,5 @@ char *sliceString(char *buf, int *bufsize, int slicesize, int index)
 			*bufsize - index - slicesize);
 	}
 	*bufsize = newsize;
-	free(buf);
 	return (newbuf);
 }

@@ -51,7 +51,7 @@ helper_t *setupMain(int argc, char **argv, char **envp)
 int main(int argc, char *argv[], char *envp[])
 {
 	helper_t *helper;
-	char *save, *tok, *inp, **args;
+	char *save, *tok, *inp, **args, *buf;
 	char delim = ' ';
 
 	helper = setupMain(argc, argv, envp);
@@ -60,11 +60,18 @@ int main(int argc, char *argv[], char *envp[])
 	{
 		if (argc == 1 && helper->type == 1)
 			prompt();
-		inp = get_line(helper->file, helper);
+		buf = get_line(helper->file, helper);
+		(helper->bufhead) = buf;
+		inp = malloc(*helper->bufsize);
+		inp = _memcpy(inp, buf, (*helper->bufsize));
 		args = NULL;
+		(helper->inphead) = inp;
+		save = NULL;
+		(*helper->last) = 0;
 		while (inp != NULL)
 		{
-			countLine(inp, helper);
+			countLine(buf, helper);
+			inp = parseDollar(inp, helper);
 			tok = splitstr(inp, &delim, &save);
 			if (checkBuiltins(inp, save, helper) == 1)
 			{
@@ -78,7 +85,7 @@ int main(int argc, char *argv[], char *envp[])
 					}
 				}
 			}
-			inp = moreLines(helper, inp);
+			inp = moreLines(helper, buf, inp);
 			save = NULL;
 		}
 		if (inp == NULL && (argc == 2 || helper->type == 0))

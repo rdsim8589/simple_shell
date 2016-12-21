@@ -60,6 +60,9 @@ typedef struct hist_s
  */
 typedef struct helper_s
 {
+	int linecount;
+	char *bufnext;
+	char *inphead;
 	char *bufhead;
 	hist_t *hist_head;
 	env_t *env;
@@ -74,7 +77,7 @@ typedef struct helper_s
 } helper_t;
 
 
-char *moreLines(helper_t *helper, char *buf);
+char *moreLines(helper_t *helper, char *buf, char *inp);
 char *parseDelimiters(char *buf, helper_t *helper);
 void countBuf(char *buf, helper_t *helper);
 void countLine(char *buf, helper_t *helper);
