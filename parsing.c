@@ -150,9 +150,9 @@ char *_getpid(void)
 		dir = malloc(100);
 		dir[0] = '\0';
 		itoa(pid, cpid);
-		strcat(dir, "/proc/");
-		strcat(dir, cpid);
-		strcat(dir, "/stat");
+		_strcat(dir, "/proc/");
+		_strcat(dir, cpid);
+		_strcat(dir, "/stat");
 		file = open(dir, O_RDONLY);
 		buf = malloc(1024);
 		readval = read(file, buf, 1024);
@@ -174,7 +174,7 @@ char *_getpid(void)
 	free(dir);
 	free(cpid);
 	newbuf = malloc(_strlen(tok) + 1);
-	memcpy(newbuf, tok, _strlen(tok) + 1);
+	_memcpy(newbuf, tok, _strlen(tok) + 1);
 	free(buf);
 	return (newbuf);
 }

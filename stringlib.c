@@ -46,8 +46,6 @@ char *_strcpy(char *dest, char *src)
 /**
  * _strdup - duplicates a string to a newly allocated space
  *
- *
- *
  * @str: string to duplicate
  * Return: returns pointer to duplicated string
  */
