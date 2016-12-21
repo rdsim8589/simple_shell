@@ -13,14 +13,13 @@ char *get_line(int file, helper_t *helper)
 {
 	char *newbuf, *readbuf, *buf;
 	long readval;
-	int i;
 
 	buf = malloc(sizeof(char) * (*helper->bufsize));
 	memset(buf, '\0', (*helper->bufsize));
 	readval = read(file, buf, *helper->bufsize);
 	(*helper->total) = readval;
 	if (readval == 0)
-		exitBuiltin("0", buf, &helper->env, helper);
+		exitBuiltin("0", buf, helper);
 	while (readval >= 1024)
 	{
 		readbuf = malloc(1024);
@@ -32,12 +31,23 @@ char *get_line(int file, helper_t *helper)
 		free(buf); buf = newbuf; free(readbuf);
 		(*helper->total) += readval; (*helper->bufsize) += 1024;
 	}
+	buf[(*helper->total - 1)] = '\0';
 	if (buf[0] != '\0')
 		add_hist((*helper->total + 1), &helper->hist_head, buf);
-	buf[(*helper->total) - 1] = '\0';
-	buf = whitespace(buf, helper); buf = parseDollar(buf, helper);
+	buf = whitespace(buf, helper);
 	buf = parseComments(buf, helper);
-	for (i = 0; i < (*helper->total); i++)
+	buf = parseDollar(buf, helper);
+	countBuf(buf, helper);
+	parseDelimiters(buf, helper);
+	helper->bufhead = buf;
+	return (buf);
+}
+
+char *parseDelimiters(char *buf, helper_t *helper)
+{
+	int i;
+
+	for (i = 0; i < *helper->total; i++)
 	{
 		if (buf[i] == EOF)
 			buf[i] = '\0';
@@ -46,11 +56,27 @@ char *get_line(int file, helper_t *helper)
 		else if (buf[i] == '\n')
 			buf[i] = '\0';
 	}
+	return (buf);
+}
+
+void countBuf(char *buf, helper_t *helper)
+{
+	int i;
+
 	for (i = 0; buf[i] != '\0'; i++)
 		;
-	(*helper->last) = i + 1; (*helper->printed) += i + 1;
-	helper->bufhead = buf;
-	return (buf);
+	(*helper->total) = i;
+	(*helper->printed) = 0;
+}
+
+void countLine(char *buf, helper_t *helper)
+{
+	int i;
+
+	for (i = 0; buf[i] != '\0'; i++)
+		;
+	(*helper->last) = i + 1;
+	(*helper->printed) += i + 1;
 }
 
 
@@ -64,8 +90,6 @@ char *get_line(int file, helper_t *helper)
  */
 char *moreLines(helper_t *helper, char *buf)
 {
-	int i;
-
 	while (buf[0] == ';')
 	{
 		buf += 1;
@@ -82,13 +106,6 @@ char *moreLines(helper_t *helper, char *buf)
 		free(helper->bufhead);
 		return (NULL);
 		}
-	i = 0;
-	while (buf[i] != '\0')
-	{
-		i++;
-	}
-	(*helper->last) = i + 1;
-	(*helper->printed) += i + 1;
 	return (buf);
 }
 

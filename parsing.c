@@ -17,16 +17,16 @@ char *whitespace(char *buf, helper_t *helper)
 		{
 			if (i == 0 || buf[i - 1] == '\n')
 				while (buf[i] == ' ')
-					buf = bufferDelete(buf, helper, i);
+					buf = bufferDelete(buf, helper, i, 1);
 			if (i == 0 && (buf[i + 1] == ';' || buf[i + 1] == '\0' ||
 				       buf[i + 1] == ' ' || buf[i + 1] == '\n'))
 			{
 				while (buf[i] == ' ')
-					buf = bufferDelete(buf, helper, i);
+					buf = bufferDelete(buf, helper, i, 1);
 			}
 			else if (i > 0 && buf[i] == ' '  && buf[i - 1] == ';')
 				while (buf[i] == ' ')
-					buf = bufferDelete(buf, helper, i);
+					buf = bufferDelete(buf, helper, i, 1);
 		}
 	}
 	return (buf);
@@ -52,36 +52,39 @@ char *parseDollar(char *buf, helper_t *helper)
 		if (buf[i] == '$')
 		{
 			start = i + 1; j = 0; i++;
-			while (!isDelimiter(buf[i]) && buf[i] != ' ' && buf[i] != '$')
+			while (!isDelimiter(buf[i]) && (!isWhitespace(buf[i])) && buf[i] != '$')
 			{
 				i++; j++;
 			}
-			name = malloc((j + 1) * (sizeof(char))); j = 0; k = start;
+			name = malloc((j + 1) * (sizeof(char)));
+			j = 0;
+			k = start;
 			while (k != i)
 				name[j++] = buf[k++];
-			name[j] = '\0'; envname = getEnvPtr(name, env);
+			name[j] = '\0';
+			envname = getEnvPtr(name, env);
 			if (envname == NULL)
-			{
-				newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
-				buf = newbuf;
-			}
+				buf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
 			else
 			{
 				value = envname->value;
 				newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
 				buf = innerCat(newbuf, value, helper->bufsize, start - 1);
-				*(helper->total) += _strlen(value);
-				*(helper->total) -= (_strlen(name) + 1);
 			}
 			free(name);
 		}
 		if (start != 0)
 		{
-			i = start; start = 0;
+			i = start;
+			start = 0;
 		}
 	}
 	return (buf);
 }
+
+		char *sliceCat(char *buf, helper_t *helper)
+		{
+		}
 
 char *parseComments(char *buf, helper_t *helper)
 {
@@ -94,22 +97,20 @@ char *parseComments(char *buf, helper_t *helper)
 			if (i == 0 || isDelimiter(buf[i - 1]) || buf[i - 1] == ' ')
 			{
 				while (!isDelimiter(buf[i]) && _strlen(buf) > i)
-					{
-						buf = bufferDelete(buf, helper, i);
-					}
+				{
+					buf = sliceString(buf, helper->bufsize, 1, i);
+				}
 			}
 		}
 	}
 	return (buf);
 }
 
-char *bufferDelete(char *buf, helper_t *helper, int index)
+char *bufferDelete(char *buf, helper_t *helper, int index, int times)
 {
 	char *newbuf;
 
-	newbuf = sliceString(buf, helper->bufsize, 1, index);
-	*helper->total = *helper->total - 1;
-	*helper->printed = *helper->printed - 1;
+	newbuf = sliceString(buf, helper->bufsize, times, index);
 	buf = newbuf;
 
 	return (buf);
@@ -121,6 +122,14 @@ int isDelimiter(char c)
 		return (1);
 	else
 		return (0);
+}
+
+int isWhitespace(char c)
+{
+	if (c == ' ' || c == '\n' || c == '\t')
+		return (1);
+	else
+		return(0);
 }
 
 /**

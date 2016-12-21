@@ -69,16 +69,21 @@ typedef struct helper_s
 	int *last;
 	char *pid;
 	int lastExit;
+	int file;
+	int type;
 } helper_t;
 
 
 char *moreLines(helper_t *helper, char *buf);
+char *parseDelimiters(char *buf, helper_t *helper);
+void countBuf(char *buf, helper_t *helper);
+void countLine(char *buf, helper_t *helper);
 
 /* builtins */
-void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper);
+void exitBuiltin(char *tok, char *inp, helper_t *helper);
 int listEnv(env_t **environ);
-int cdBuiltin(char *save, env_t *head);
-int checkBuiltins(char *tok, char *save, env_t **head, helper_t *helper);
+int cdBuiltin(char *save, helper_t *helper);
+int checkBuiltins(char *tok, char *save, helper_t *helper);
 int unsetEnv(char *name, env_t **head);
 env_t *setEnvPtr(char *envname, char *value, env_t *head);
 
@@ -106,10 +111,10 @@ env_t *getEnvPtr(char *name, env_t *head);
 
 /* main.c prototypes */
 helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid);
-int checkPath(char *inp, char *argv[], char *save, env_t *head, helper_t *helper);
+int checkPath(char *inp, char *argv[], char *save, helper_t *helper);
 void freeArgs(char **args, int envsize);
 char **getArgs(char *tok, char *argv[], char *save);
-int runProg(char *name, char *argv[], env_t *head);
+int runProg(char *name, char *argv[], helper_t *helper);
 
 char *_getpid(void);
 
@@ -161,7 +166,12 @@ void helpAlias(void);
 void helpHistory(void);
 
 
-char *bufferDelete(char *buf, helper_t *helper, int index);
+void sighandler(int signum);
+
+helper_t *setupMain(int argc, char **argv, char **envp);
+int checkLocal(char *tok, helper_t *helper, char *save);
+char *bufferDelete(char *buf, helper_t *helper, int index, int times);
 char *parseComments(char *buf, helper_t *helper);
 int isDelimiter(char c);
+int isWhitespace(char c);
 #endif

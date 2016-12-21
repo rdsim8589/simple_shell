@@ -8,38 +8,38 @@
  * @head: env_t head
  * Return: 1 on success, 0 on failure
  */
-int cdBuiltin(char *save, env_t *head)
+int cdBuiltin(char *save, helper_t *helper)
 {
 	char *oldcwd, *home, *tok;
 	char delim = ' ';
 
 	tok = NULL;
 	oldcwd = getcwd(NULL, 100);
-	home = (getEnvPtr("HOME", head))->value;
+	home = (getEnvPtr("HOME", helper->env))->value;
 
 	tok = splitstr(NULL, &delim, &save);
 	if (tok == NULL) /*If no argument, we want to go HOME */
 	{
 		chdir(home);
-		setEnvPtr("PWD", home, head);
-		setEnvPtr("OLDPWD", oldcwd, head);
+		setEnvPtr("PWD", home, helper->env);
+		setEnvPtr("OLDPWD", oldcwd, helper->env);
 		free(oldcwd);
 		return (1); /*return 1, success*/
 	}
 	if (tok[0] == '-') /*if we do cd -*/
 	{
-		if (getEnvPtr("OLDPWD", head) == NULL)
+		if (getEnvPtr("OLDPWD", helper->env) == NULL)
 		{
 			_putstring("cd: OLDPWD not set");
 			free(oldcwd);
 			return (0);
 		}
-		tok = (getEnvPtr("OLDPWD", head))->value;
+		tok = (getEnvPtr("OLDPWD", helper->env))->value;
 	}
 	if (chdir(tok) != -1)
 	{
-		setEnvPtr("PWD", tok, head);
-		setEnvPtr("OLDPWD", oldcwd, head);
+		setEnvPtr("PWD", tok, helper->env);
+		setEnvPtr("OLDPWD", oldcwd, helper->env);
 		free(oldcwd);
 		return (1);
 	}
@@ -56,7 +56,7 @@ int cdBuiltin(char *save, env_t *head)
  * @environ: environ double pointer
  * @helper: helper struct
  */
-void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper)
+void exitBuiltin(char *tok, char *inp, helper_t *helper)
 {
 	int i;
 
@@ -66,7 +66,7 @@ void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper)
 		i = 0;
 	free(inp);
 	clear_hist(&(helper->hist_head));
-	free_list(*environ);
+	free_list(helper->env);
 	free(helper->printed);
 	free(helper->total);
 	free(helper->last);

@@ -1,6 +1,44 @@
 #include "shell.h"
 
-void sighandler(int signum);
+helper_t *setupMain(int argc, char **argv, char **envp)
+{
+	char *pid;
+	env_t *head;
+	hist_t *hist_head;
+	helper_t *helper;
+
+	pid = _getpid();
+	hist_head = NULL;
+	head = NULL;
+
+	if (argc > 2 || argv == NULL || envp == NULL)
+	{
+		_putstring("Please run with no argument, or one argument to run from script.");
+		_exit(9);
+	}
+
+	initEnvList(envp, &head);
+	hist_head = pull_hist(&hist_head, head);
+	helper = initHelper(head, hist_head, pid);
+
+	if (argc == 1)
+		helper->file = STDIN_FILENO;
+	else if (argc == 2)
+	{
+		helper->file = open(argv[1], O_RDONLY);
+		if (helper->file == -1)
+		{
+			_putstring("Error opening script file: ");
+			_putstring(argv[1]);
+			_putchar('\n');
+			_exit(9);
+		}
+	}
+
+	helper->type = getTermType(helper->file);
+
+	return (helper);
+}
 
 /**
  * main - entry point for shell program
@@ -12,73 +50,28 @@ void sighandler(int signum);
  */
 int main(int argc, char *argv[], char *envp[])
 {
-	char *save, *tok, *inp, **args, *pid;
-	char delim = ' ';
-	env_t *head;
 	helper_t *helper;
-	int file, type;
-	hist_t *hist_head;
-	struct stat st;
+	char *save, *tok, *inp, **args;
+	char delim = ' ';
 
-	pid = _getpid();
-	hist_head = NULL;
-	head = NULL;
-	if (argc == 1)
-		file = STDIN_FILENO;
-	else if (argc == 2)
-	{
-		file = open(argv[1], O_RDONLY);
-		if (file == -1)
-		{
-			_putstring("Error opening file.");
-			_exit(9);
-		}
-	}
-	else
-	{
-		_putstring("Please run with no argument, or one argument to run from script.");
-		_exit(9);
-	}
-	type = getTermType(file);
-	(void) argc; /* need to use this to check to check for scripts later!*/
+	helper = setupMain(argc, argv, envp);
 	signal(SIGINT, sighandler);
-	initEnvList(envp, &head);
-	hist_head = pull_hist(&hist_head, head);
-	helper = initHelper(head, hist_head, pid);
-	/* grab the history file and populate the hist linked list */
 	while (1)
 	{
-		if (argc == 1 && type == 1)
+		if (argc == 1 && helper->type == 1)
 			prompt();
-		inp = get_line(file, helper);
+		inp = get_line(helper->file, helper);
 		args = NULL;
 		while (inp != NULL)
 		{
+			countLine(inp, helper);
 			tok = splitstr(inp, &delim, &save);
-			if (checkBuiltins(inp, save, &head, helper) == 0)
+			if (checkBuiltins(inp, save, helper) == 1)
 			{
-				if ((tok[0] == '.' && tok[1] == '/') || tok[0] == '/')
+				if (checkLocal(inp, helper, save) == 1)
 				{
-					if (tok[0] == '.')
-						tok = tok + 2;
-					if (stat(tok, &st) == 0 &&
-					    (st.st_mode & S_IXUSR) && S_ISREG(st.st_mode))
-					{
-						args = getArgs(tok, argv, save);
-						helper->lastExit = runProg(tok, args, head);
-					}
-					else
-					{
-						if (tok[0] != '/')
-							tok = (tok - 2);
-						_putstring(tok);
-						_putstring(": No such file or directory.\n");
-					}
-				}
-				else
-				{
-					helper->lastExit = checkPath(tok, args, save, head, helper);
-					if (helper->lastExit == 0)
+					helper->lastExit = checkPath(tok, args, save, helper);
+					if (helper->lastExit == 1)
 					{
 						_putstring(tok);
 						_putstring(": command not found.\n");
@@ -88,13 +81,49 @@ int main(int argc, char *argv[], char *envp[])
 			inp = moreLines(helper, inp);
 			save = NULL;
 		}
-		if (inp == NULL && (argc == 2 || type == 0))
+		if (inp == NULL && (argc == 2 || helper->type == 0))
 		{
 			free(inp);
-			free_list(head);
+			free_list(helper->env);
 			_exit(9);
 		}
 	}
+}
+
+/**
+ *
+ *
+ *
+ *
+ *
+ */
+int checkLocal(char *tok, helper_t *helper, char *save)
+{
+	struct stat st;
+	char **args;
+
+	args = NULL;
+	if ((tok[0] == '.' && tok[1] == '/') || tok[0] == '/')
+	{
+		if (tok[0] == '.')
+			tok = tok + 2;
+		if (stat(tok, &st) == 0 &&
+		    (st.st_mode & S_IXUSR) && S_ISREG(st.st_mode))
+		{
+			args = getArgs(tok, args, save);
+			helper->lastExit = runProg(tok, args, helper);
+			return(0);
+		}
+		else
+		{
+			if (tok[0] != '/')
+				tok = (tok - 2);
+			_putstring(tok);
+			_putstring(": No such file or directory.\n");
+			return (127);
+		}
+	}
+	return (1);
 }
 
 /**
@@ -105,7 +134,7 @@ int main(int argc, char *argv[], char *envp[])
  *
  * Return: returns 1 on success, 0 on failure.
  */
-int checkBuiltins(char *inp, char *save, env_t **environ, helper_t *helper)
+int checkBuiltins(char *inp, char *save, helper_t *helper)
 {
 	char *value, *tok;
 	char delim = ' ';
@@ -113,39 +142,37 @@ int checkBuiltins(char *inp, char *save, env_t **environ, helper_t *helper)
 
 	hist_head = helper->hist_head;
 	if (allstrcmp(inp, "env") == 0) /*if the first word is env, run env*/
-	{
-		listEnv(environ);
-	}
+		listEnv(&helper->env);
 	else if (allstrcmp(inp, "exit") == 0) /* probably split this into a dif func*/
 	{
 		tok = splitstr(NULL, &delim, &save);
 		push_hist(helper->hist_head, helper->env);
-		exitBuiltin(tok, inp, environ, helper);
+		exitBuiltin(tok, inp, helper);
 	}
 	else if (allstrcmp(inp, "setenv") == 0) /*setenv*/
 	{
 		tok = splitstr(NULL, &delim, &save);
 		value = splitstr(NULL, &delim, &save);
-		setEnvPtr(tok, value, *environ);
+		setEnvPtr(tok, value, helper->env);
 	}
 	else if (allstrcmp(inp, "unsetenv") == 0)
 	{
 		tok = splitstr(NULL, &delim, &save);
-		unsetEnv(tok, environ);
+		unsetEnv(tok, &helper->env);
 	}
 	else if (allstrcmp(inp, "history") == 0)
 		print_hist(hist_head);
 	else if (allstrcmp(inp, "cd") == 0)
-		cdBuiltin(save, *environ);
+		cdBuiltin(save, helper);
 	else if (allstrcmp(inp, "help") == 0)
 	{
 		tok = splitstr(NULL, &delim, &save);
 		helpBuiltIn(tok);
 	}
 	else
-		return (0);
+		return (1);
 
-	return (1);
+	return (0);
 }
 
 int getTermType(int file)
@@ -192,7 +219,7 @@ helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid)
  *
  * Return: returns 1 if program ran, 0 if some sort of error
  */
-int checkPath(char *inp, char *argv[], char *save, env_t *head, helper_t *helper)
+int checkPath(char *inp, char *argv[], char *save, helper_t *helper)
 {
 	int j;
 	char *temp, *path[PATHSIZE], *tok, **args, *pathsave, *paths, *cwd;
@@ -201,7 +228,7 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head, helper_t *helper
 	temp = NULL;
 	cwd = malloc(100);
 	getcwd(cwd, 100);
-	if (getEnvPtr("PATH", head) != NULL)
+	if (getEnvPtr("PATH", helper->env) != NULL)
 	{
 		if (inp == NULL || inp[0] == '\0')
 		{
@@ -209,7 +236,7 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head, helper_t *helper
 			return (-1);
 		}
 		j = 0;
-		paths = _strdup((getEnvPtr("PATH", head))->value); /* tmp to avoid mangling env */
+		paths = _strdup((getEnvPtr("PATH", helper->env))->value); /* tmp to avoid mangling env */
 		tok = splitstr(paths, &colon, &pathsave);
 		while (tok != NULL)
 		{
@@ -227,7 +254,7 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head, helper_t *helper
 			if (access(temp, X_OK) == 0)
 			{
 				args = getArgs(tok, argv, save);
-				helper->lastExit = runProg(temp, args, head);
+				helper->lastExit = runProg(temp, args, helper);
 				break;
 			}
 			if (temp != NULL)
@@ -243,14 +270,14 @@ int checkPath(char *inp, char *argv[], char *save, env_t *head, helper_t *helper
 				free(temp);
 			free(paths);
 			free(cwd);
-			return (0); /* Need to free 2d array for path either way, on return 1 or 0! */
+			return (1); /* Need to free 2d array for path either way, on return 1 or 0! */
 		}
 	}
 	free(cwd);
 	free(paths);
 	if (temp != NULL)
 		free(temp);
-	return (1);
+	return (0);
 
 }
 
@@ -315,13 +342,13 @@ char **getArgs(char *tok, char *argv[], char *save)
  * @argv: 2d array of arguments, either from main, or from getArgs
  * Return: returns -1 on failure, or the exit status of the child
  */
-int runProg(char *name, char *argv[], env_t *head)
+int runProg(char *name, char *argv[], helper_t *helper)
 {
 	pid_t cpid;
 	int cstatus, envsize;
 	char **envs;
 
-	envs = buildEnv(head, &envsize);
+	envs = buildEnv(helper->env, &envsize);
 	cpid = fork();
 	if (cpid == -1) /* if fork returns -1, it failed */
 	{
