@@ -60,6 +60,10 @@ void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper)
 {
 	int i;
 
+	if (tok != NULL)
+		i = atoi(tok);
+	else
+		i = 0;
 	free(inp);
 	clear_hist(&(helper->hist_head));
 	free_list(*environ);
@@ -69,11 +73,7 @@ void exitBuiltin(char *tok, char *inp, env_t **environ, helper_t *helper)
 	free(helper->bufsize);
 	free(helper->pid);
 	free(helper);
-	if (tok != NULL)
-		i = atoi(tok);
-	else
-		i = 0;
-	_exit(i);
+	_exit(i & 255);
 }
 
 /**
