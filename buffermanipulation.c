@@ -18,7 +18,7 @@ char *innerCat(char *buf, char *string, int *bufsize, int insert)
 
 	newsize = *bufsize + _strlen(string);
 
-	newbuf = malloc(newsize * sizeof(char));
+	newbuf = mloc(newsize * sizeof(char), NULL);
 	_memset(newbuf, '\0', newsize);
 	_memcpy(newbuf, buf, insert);
 	_memcpy(newbuf + insert, string, _strlen(string));
@@ -43,7 +43,7 @@ char *sliceString(char *buf, int *bufsize, int slicesize, int index)
 	int newsize;
 
 	newsize = *bufsize - slicesize;
-	newbuf = malloc(newsize * sizeof(char));
+	newbuf = mloc(newsize * sizeof(char), NULL);
 	_memset(newbuf, '\0', newsize);
 	_memcpy(newbuf, buf, index);
 	if (buf[index + slicesize] != '\0')

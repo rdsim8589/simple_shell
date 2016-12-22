@@ -25,7 +25,7 @@ int main(int argc, char *argv[], char *envp[])
 				prompt();
 			buf = get_line(helper->file, helper);
 		}
-		inp = malloc(*helper->bufsize);
+		inp = mloc(*helper->bufsize, helper);
 		inp = _memcpy(inp, buf, (*helper->bufsize));
 		(helper->inphead) = inp; (helper->bufhead) = buf;
 		save = NULL; args = NULL;
@@ -135,16 +135,16 @@ helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid)
 {
 	helper_t *helper;
 
-	helper = malloc(sizeof(helper_t));
+	helper = mloc(sizeof(helper_t), NULL);
 	helper->env = env;
 	helper->hist_head = hist_head;
-	helper->printed = malloc(sizeof(int) * 1);
+	helper->printed = mloc(sizeof(int) * 1, NULL);
 	*(helper->printed) = 0;
-	helper->total = malloc(sizeof(long) * 1);
+	helper->total = mloc(sizeof(long) * 1, NULL);
 	*(helper->total) = 0;
-	helper->bufsize = malloc(sizeof(int) * 1);
+	helper->bufsize = mloc(sizeof(int) * 1, NULL);
 	*(helper->bufsize) = 1024;
-	helper->last = malloc(sizeof(int) * 1);
+	helper->last = mloc(sizeof(int) * 1, NULL);
 	*(helper->last) = 0;
 	helper->pid = pid;
 	helper->lastExit = 0;

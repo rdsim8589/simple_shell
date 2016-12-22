@@ -17,10 +17,10 @@ hist_t *add_hist(int total, hist_t **hist_head, char *buf)
 	{
 		return (NULL);
 	}
-	new_hist = malloc(sizeof(hist_t));
+	new_hist = mloc(sizeof(hist_t), NULL);
 	if (new_hist == NULL)
 		return (NULL);
-	new_hist->entry = malloc(sizeof(char) * total);
+	new_hist->entry = mloc(sizeof(char) * total, NULL);
 	_memcpy(new_hist->entry, buf, total);
 
 	for (i = 0; i <= total - 1; i++)
@@ -156,7 +156,7 @@ hist_t *pull_hist(hist_t **hist_head, env_t *head)
 	{
 		_putstring("failed to get count of hist_file");	exit(301);
 	}
-	buf = malloc(sizeof(char) * buf_len); err_r = read(file, buf, buf_len);
+	buf = mloc(sizeof(char) * buf_len, NULL); err_r = read(file, buf, buf_len);
 	if (err_r == -1)
 		_putstring("unable to read hist_file");
 	buf[buf_len - 1] = '\0'; delim = '\n';

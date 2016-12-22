@@ -55,7 +55,7 @@ char *_strdup(char *str)
 
 	if (str == NULL)
 		return (NULL);
-	dupe = malloc(_strlen(str) + 1);
+	dupe = mloc(_strlen(str) + 1, NULL);
 	if (dupe == NULL)
 		return (NULL);
 	_strcpy(dupe, str);
@@ -80,7 +80,7 @@ char *str_concat(char *s1, char *s2)
 	if (s2 == NULL)
 		s2 = "";
 	size = (_strlen(s1) + _strlen(s2) + 1);
-	new = malloc(size);
+	new = mloc(size, NULL);
 	if (new == NULL)
 		return (NULL);
 	_strcpy(new, s1);

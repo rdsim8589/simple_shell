@@ -194,4 +194,5 @@ char *insertEnvValue(char *a, char *value, helper_t *helper, int, char *name);
 char *insertPid(char *buf, helper_t *helper, int start);
 char *insertLastExit(char *buf, helper_t *helper, int start);
 char *_strcat(char *dest, char *src);
+void *mloc(unsigned int b, helper_t *helper);
 #endif

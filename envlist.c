@@ -19,7 +19,7 @@ env_t *initEnvList(char **environ, env_t **head)
 	i = 0;
 	while (environ[i] != NULL)
 	{
-		newnode = malloc(sizeof(env_t));
+		newnode = mloc(sizeof(env_t), NULL);
 		if (newnode == NULL)
 			return (NULL);
 		temp = _strdup(environ[i]);
@@ -73,7 +73,7 @@ char **buildEnv(env_t *head, int *envsize)
 	}
 	*envsize = i;
 	temp = head;
-	envs = malloc(sizeof(char *) * (i + 1));
+	envs = mloc(sizeof(char *) * (i + 1), NULL);
 	i = 0;
 	while (temp != NULL)
 	{
@@ -128,7 +128,7 @@ env_t *addEnv(env_t **head, char *name, char *value)
 
 	if (head == NULL || name == NULL || value == NULL)
 		return (NULL);
-	newnode = malloc(sizeof(env_t));
+	newnode = mloc(sizeof(env_t), NULL);
 	if (newnode == NULL)
 		return (NULL);
 	newnode->name = _strdup(name);

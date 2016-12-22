@@ -14,7 +14,7 @@ char *get_line(int file, helper_t *helper)
 	char *newbuf, *readbuf, *buf;
 	long readval;
 
-	buf = malloc(sizeof(char) * (*helper->bufsize));
+	buf = mloc(sizeof(char) * (*helper->bufsize), helper);
 	(helper->bufhead) = buf;
 	_memset(buf, '\0', (*helper->bufsize));
 	readval = read(file, buf, *helper->bufsize);
@@ -25,9 +25,9 @@ char *get_line(int file, helper_t *helper)
 	}
 	while (readval >= 1024)
 	{
-		readbuf = malloc(1024);
+		readbuf = mloc(1024, helper);
 		readval = read(file, readbuf, 1024);
-		newbuf = malloc((*helper->bufsize) + 1024);
+		newbuf = mloc((*helper->bufsize) + 1024, helper);
 		_memset(newbuf, '\0', (*helper->bufsize) + 1024);
 		newbuf = _memcpy(newbuf, buf, (*helper->bufsize));
 		_memcpy(newbuf + (*helper->bufsize), readbuf, 1024);

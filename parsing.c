@@ -92,16 +92,16 @@ char *_getpid(void)
 	pid = fork();
 	if (pid > 0)
 	{
-		cpid = malloc(sizeof(long) * sizeof(char));
+		cpid = mloc(sizeof(long) * sizeof(char), NULL);
 		cpid[0] = '\0';
-		dir = malloc(100);
+		dir = mloc(100, NULL);
 		dir[0] = '\0';
 		itoa(pid, cpid);
 		_strcat(dir, "/proc/");
 		_strcat(dir, cpid);
 		_strcat(dir, "/stat");
 		file = open(dir, O_RDONLY);
-		buf = malloc(1024);
+		buf = mloc(1024, NULL);
 		readval = read(file, buf, 1024);
 		if (readval < 0)
 		{
@@ -120,7 +120,7 @@ char *_getpid(void)
 	}
 	free(dir);
 	free(cpid);
-	newbuf = malloc(_strlen(tok) + 1);
+	newbuf = mloc(_strlen(tok) + 1, NULL);
 	_memcpy(newbuf, tok, _strlen(tok) + 1);
 	free(buf);
 	return (newbuf);

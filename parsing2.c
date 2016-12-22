@@ -60,7 +60,7 @@ char *parseDollar(char *buf, helper_t *helper)
 				buf = insertLastExit(buf, helper, start);
 			else if (j != 0)
 			{
-				name = malloc((j + 1) * (sizeof(char)));
+				name = mloc((j + 1) * (sizeof(char)), helper);
 				for (k = start, j = 0; k != i; j++, k++)
 					name[j] = buf[k];
 				name[j] = '\0';
@@ -141,7 +141,7 @@ char *insertLastExit(char *buf, helper_t *helper, int start)
 {
 	char *newbuf, *name;
 
-	name = malloc(100);
+	name = mloc(100, helper);
 	itoa(helper->lastExit, name);
 	newbuf = sliceString(buf, helper->bufsize, 2, start - 1);
 	buf = innerCat(newbuf, name, helper->bufsize, start - 1);

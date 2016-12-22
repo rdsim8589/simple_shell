@@ -104,7 +104,7 @@ int checkPath(char *inp, char *argv[], char *save, helper_t *helper)
 	char *temp, *path[PATHSIZE], *tok, **args, *pathsave, *paths, *cwd;
 	char colon = ':';
 
-	temp = NULL; cwd = malloc(100); getcwd(cwd, 100); retval = 0;
+	temp = NULL; cwd = mloc(100, helper); getcwd(cwd, 100); retval = 0;
 	if (getEnvPtr("PATH", helper->env) != NULL)
 	{
 		if (inp == NULL || inp[0] == '\0')
@@ -179,7 +179,7 @@ char **getArgs(char *tok, char *argv[], char *save)
  * Currently this just allocates space out for 100 pntrs, that's... a lot
  */
 	(void) argv;
-	args = malloc(sizeof(char *) * 10000);
+	args = mloc(sizeof(char *) * 10000, NULL);
 	arg = NULL;
 	args[0] = tok;
 	arg = splitstr(NULL, &delim, &save);
