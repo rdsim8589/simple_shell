@@ -25,10 +25,10 @@ env_t *initEnvList(char **environ, env_t **head)
 		temp = _strdup(environ[i]);
 		tok = splitstr(temp, &equals, &saveptr);
 		if (tok != NULL)
-			newnode->name = strdup(tok);
+			newnode->name = _strdup(tok);
 		tok = splitstr(NULL, &newline, &saveptr);
 		if (tok != NULL)
-			newnode->value = strdup(tok);
+			newnode->value = _strdup(tok);
 		free(temp);
 		if (*head == NULL)
 		{

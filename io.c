@@ -8,11 +8,9 @@ void prompt(void)
 	char *cwd;
 
 	cwd = getcwd(NULL, 100);
-	_putstring(ANSI_COLOR_GREEN);
 	_putstring(cwd);
 	_putchar('$');
 	_putchar(' ');
-	_putstring(ANSI_COLOR_RED);
 	free(cwd);
 }
 
