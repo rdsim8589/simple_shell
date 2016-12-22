@@ -1,13 +1,10 @@
 # simple_shell
+
+## DESCRIPTION
 A simple shell created for Holberton School project. Partner project with @rdsim8589 &amp; @wintermanc3r
 Contact timothy.britton@holbertonschool.com or richard.sim@holbertonschool.com to correct errors or typos.
 
 Simple_shell is an sh-compatible command language interpreter that executes commands from the stand input or from a file.
-## SYNOPSIS
-simple_shell [command_string | file]
-
-## DESCRIPTION
-simple_shell is an sh-compatible command language interpreter that executes commands read from the standard input or from a file.h. Simple shell works similarly to Bash.
 
 ## QUICK START
 To start up simple_shell, compile using `gcc 4.8.4 -Wall -Werror -Wextra -pedantic *.c -o hsh`.
@@ -15,6 +12,9 @@ To start up simple_shell, compile using `gcc 4.8.4 -Wall -Werror -Wextra -pedant
 run
 ```
 ./hsh
+
+## SYNOPSIS
+simple_shell [command_string | file]
 ```
 ### Overview
 The simple_shell is a command that reads lines from either a file or the terminal, interprets them, and generally executes other commands.  It is the program that is running when the user runs gcc -Wall -Werror -Wextra -pedantic *.c -o hsh and runs the executable file, ./hsh. The simple_shell implements a language that has flow control constructs, a macro facility that provides a variety of features in addition to data storage, along with built in history and line editing capabilities.  It incorporates many features to aid interactive use and has the advantage that the interpretative language is common to both interactive and non-interactive use (shell scripts).  That is, commands can be typed directly to the running shell or can be put into a file and the file can be executed directly by the shell.
