@@ -18,10 +18,12 @@ char *get_line(int file, helper_t *helper)
 	(helper->bufhead) = buf;
 	_memset(buf, '\0', (*helper->bufsize));
 	readval = read(file, buf, *helper->bufsize);
+	if (readval == -1)
+	{ perror("Read error:"); exitBuiltin("99", buf, helper); }
 	(*helper->total) = readval;
-	if (readval == 0 && helper->type == 0)
+	if (readval == 0)
 	{
-		exitBuiltin("0", buf, helper);
+		_putchar('\n'); exitBuiltin("0", buf, helper);
 	}
 	while (readval >= 1024)
 	{
