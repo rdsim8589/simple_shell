@@ -33,18 +33,19 @@ int main(int argc, char *argv[], char *envp[])
 		while (inp != NULL)
 		{
 			countLine(buf, helper);
-			inp = parseDollar(inp, helper); tok = splitstr(inp, &delim, &save);
-			if (checkBuiltins(inp, save, helper) == 1)
-				if (checkLocal(inp, helper, save) == 1)
+			inp = parseDollar(inp, helper);
+			tok = splitstr(inp, &delim, &save);
+			helper->args = getArgs(tok, args, save);
+			if (checkBuiltins(inp, helper, helper->args) == 1)
+				if (checkLocal(inp, helper, helper->args) == 1)
 				{
-					helper->lastExit = checkPath(tok, args, save, helper);
+					helper->lastExit = checkPath(tok, helper->args, helper);
 					if (helper->lastExit != 0)
-					{
-						_putstring(tok); _putstring(": command not found.\n");
-					}
+					{ _putstring(tok); _putstring(": command not found.\n"); }
 				}
 			inp = moreLines(helper, buf, inp);
-			save = NULL;
+			save = NULL; if (inp != NULL)
+				free(helper->args);
 		}
 		if (inp == NULL && (argc == 2 || helper->type == 0))
 			exitBuiltin("0", NULL, helper);
@@ -146,6 +147,7 @@ helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid)
 	*(helper->bufsize) = 1024;
 	helper->last = mloc(sizeof(int) * 1, NULL);
 	*(helper->last) = 0;
+	helper->args = NULL;
 	helper->pid = pid;
 	helper->lastExit = 0;
 
@@ -186,7 +188,6 @@ int runProg(char *name, char *argv[], helper_t *helper)
 	else /* if neither are true, we're in the parent */
 	{
 		wait(&cstatus); /* wait til we get back */
-		free(argv);
 		freeArgs(envs, envsize);
 		return (cstatus); /* now return the child's exit status */
 	}

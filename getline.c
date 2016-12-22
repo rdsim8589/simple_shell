@@ -21,9 +21,11 @@ char *get_line(int file, helper_t *helper)
 	if (readval == -1)
 	{ perror("Read error:"); exitBuiltin("99", buf, helper); }
 	(*helper->total) = readval;
-	if (readval == 0)
+	if (readval <= 0)
 	{
-		_putchar('\n'); exitBuiltin("0", buf, helper);
+		if (helper->type == 1)
+			_putchar('\n');
+		exitBuiltin("0", buf, helper);
 	}
 	while (readval >= 1024)
 	{

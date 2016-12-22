@@ -4,20 +4,18 @@
  * cdBuiltin - function to execute the builtin CD command
  * sets the pwd and oldpwd environmental variables appropriately
  *
- * @save: saveptr for tokens
+ * @args: tokenized arguments
  * @helper: ptr to the helper struct
  * Return: 1 on success, 0 on failure
  */
-int cdBuiltin(char *save, helper_t *helper)
+int cdBuiltin(char **args, helper_t *helper)
 {
 	char *oldcwd, *home, *tok;
-	char delim = ' ';
 
-	tok = NULL;
+	tok = args[1];
 	oldcwd = getcwd(NULL, 100);
 	home = (getEnvPtr("HOME", helper->env))->value;
 
-	tok = splitstr(NULL, &delim, &save);
 	if (tok == NULL) /*If no argument, we want to go HOME */
 	{
 		chdir(home);
@@ -26,11 +24,11 @@ int cdBuiltin(char *save, helper_t *helper)
 		free(oldcwd);
 		return (1); /*return 1, success*/
 	}
-	if (tok[0] == '-') /*if we do cd -*/
+	if (tok[0] == '-' && tok[1] == '\0') /*if we do cd -*/
 	{
 		if (getEnvPtr("OLDPWD", helper->env) == NULL)
 		{
-			_putstring("cd: OLDPWD not set");
+			_putstring("cd: OLDPWD not set.\n");
 			free(oldcwd);
 			return (0);
 		}
@@ -45,7 +43,7 @@ int cdBuiltin(char *save, helper_t *helper)
 		free(oldcwd);
 		return (1);
 	}
-	_putstring("cd: Invalid folder.");
+	_putstring("cd: Invalid folder.\n");
 	free(oldcwd);
 	return (0);
 }
@@ -79,6 +77,8 @@ void exitBuiltin(char *tok, char *inp, helper_t *helper)
 	free(helper->last);
 	free(helper->bufsize);
 	free(helper->pid);
+	if (helper->args != NULL)
+		free(helper->args);
 	free(helper);
 	_exit(i & 255);
 }

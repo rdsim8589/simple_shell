@@ -4,16 +4,14 @@
  * checkLocal - checking if local
  * @tok: tokenized input
  * @helper: helper struct
- * @save: ptr of the token after @tok
+ * @args: tokenized argument list
  *
  * Return: 0 if success, 1 if fail, and 127 if no such file found
  */
-int checkLocal(char *tok, helper_t *helper, char *save)
+int checkLocal(char *tok, helper_t *helper, char **args)
 {
 	struct stat st;
-	char **args;
 
-	args = NULL;
 	if ((tok[0] == '.' && tok[1] == '/') || tok[0] == '/')
 	{
 		if (tok[0] == '.')
@@ -21,7 +19,6 @@ int checkLocal(char *tok, helper_t *helper, char *save)
 		if (stat(tok, &st) == 0 &&
 		    (st.st_mode & S_IXUSR) && S_ISREG(st.st_mode))
 		{
-			args = getArgs(tok, args, save);
 			helper->lastExit = runProg(tok, args, helper);
 			return (0);
 		}
@@ -42,45 +39,30 @@ int checkLocal(char *tok, helper_t *helper, char *save)
  * checkBuiltins - checks for builtin commands matching the first inputted word
  *
  * @inp: input string from main
- * @save: saveptr for tokens
  * @helper: the ptr to the helper struct
+ * @args: tokenized argument list
  *
  * Return: returns 0 on success, 1 on failure.
  */
-int checkBuiltins(char *inp, char *save, helper_t *helper)
+int checkBuiltins(char *inp, helper_t *helper, char **args)
 {
-	char *value, *tok;
-	char delim = ' ';
 	hist_t *hist_head;
 
 	hist_head = helper->hist_head;
 	if (allstrcmp(inp, "env") == 0)
 		listEnv(&helper->env);
 	else if (allstrcmp(inp, "exit") == 0)
-	{
-		tok = splitstr(NULL, &delim, &save);
-		exitBuiltin(tok, inp, helper);
-	}
+		exitBuiltin(args[1], inp, helper);
 	else if (allstrcmp(inp, "setenv") == 0)
-	{
-		tok = splitstr(NULL, &delim, &save);
-		value = splitstr(NULL, &delim, &save);
-		setEnvPtr(tok, value, helper->env);
-	}
+		setEnvPtr(args[1], args[2], helper->env);
 	else if (allstrcmp(inp, "unsetenv") == 0)
-	{
-		tok = splitstr(NULL, &delim, &save);
-		unsetEnv(tok, &helper->env);
-	}
+		unsetEnv(args[1], &helper->env);
 	else if (allstrcmp(inp, "history") == 0)
 		print_hist(hist_head);
 	else if (allstrcmp(inp, "cd") == 0)
-		cdBuiltin(save, helper);
+		cdBuiltin(args, helper);
 	else if (allstrcmp(inp, "help") == 0)
-	{
-		tok = splitstr(NULL, &delim, &save);
-		helpBuiltIn(tok);
-	}
+		helpBuiltIn(args[1]);
 	else
 		return (1);
 
@@ -92,16 +74,15 @@ int checkBuiltins(char *inp, char *save, helper_t *helper)
  * if it is, will ruin the program and return 1
  *
  * @inp: input string we're working with
- * @argv: program argv
- * @save: splitstring save pointer
  * @helper: ptr to the helper struct
+ * @args: tokenized argument list
  *
  * Return: returns 1 if program ran, 0 if some sort of error
  */
-int checkPath(char *inp, char *argv[], char *save, helper_t *helper)
+int checkPath(char *inp, char **args, helper_t *helper)
 {
 	int j, retval;
-	char *temp, *path[PATHSIZE], *tok, **args, *pathsave, *paths, *cwd;
+	char *temp, *path[PATHSIZE], *tok, *pathsave, *paths, *cwd;
 	char colon = ':';
 
 	temp = NULL; cwd = mloc(100, helper); getcwd(cwd, 100); retval = 0;
@@ -125,7 +106,6 @@ int checkPath(char *inp, char *argv[], char *save, helper_t *helper)
 				temp = dir_concat(path[j], inp);
 			if (access(temp, X_OK) == 0)
 			{
-				args = getArgs(inp, argv, save);
 				helper->lastExit = runProg(temp, args, helper);
 				break;
 			}
@@ -176,10 +156,10 @@ char **getArgs(char *tok, char *argv[], char *save)
 	int i;
 
 /* Need a clever way to get the number of args before allocating
- * Currently this just allocates space out for 100 pntrs, that's... a lot
+ * Currently this just allocates space out for 1000 pntrs, that's... a lot?
  */
 	(void) argv;
-	args = mloc(sizeof(char *) * 10000, NULL);
+	args = mloc(sizeof(char *) * 1000, NULL);
 	arg = NULL;
 	args[0] = tok;
 	arg = splitstr(NULL, &delim, &save);
