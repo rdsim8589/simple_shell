@@ -1,51 +1,12 @@
 #include "shell.h"
-
-helper_t *setupMain(int argc, char **argv, char **envp)
-{
-	char *pid;
-	env_t *head;
-	hist_t *hist_head;
-	helper_t *helper;
-
-	pid = _getpid();
-	hist_head = NULL;
-	head = NULL;
-
-	if (argc > 2 || argv == NULL || envp == NULL)
-	{
-		_putstring("Please run with no argument, or one argument to run from script.");
-		_exit(9);
-	}
-
-	initEnvList(envp, &head);
-	hist_head = pull_hist(&hist_head, head);
-	helper = initHelper(head, hist_head, pid);
-
-	if (argc == 1)
-		helper->file = STDIN_FILENO;
-	else if (argc == 2)
-	{
-		helper->file = open(argv[1], O_RDONLY);
-		if (helper->file == -1)
-		{
-			_putstring("Error opening script file: ");
-			_putstring(argv[1]);
-			_putchar('\n');
-			_exit(9);
-		}
-	}
-
-	helper->type = getTermType(helper->file);
-
-	return (helper);
-}
-
 /**
  * main - entry point for shell program
  * loops input for a shell, splits them into appropriate actions
  *
  * @argc: argument count
  * @argv: arguments passed
+ * @envp: list of environment names and their values
+ *
  * Return: return values in man page
  */
 int main(int argc, char *argv[], char *envp[])
@@ -94,11 +55,63 @@ int main(int argc, char *argv[], char *envp[])
 }
 
 /**
+ * setupMain - populates helper struct, determine if given STDIN, or File,
+ * initialize the hist and env struct, grab the parent pid, and determines if
+ * file in termianl or a pipe.
+ * @argc: arugment count
+ * @argv: arguements passed
+ * @envp: list of environment names and their values
  *
+ * Return: the helper struct
+ */
+helper_t *setupMain(int argc, char **argv, char **envp)
+{
+	char *pid;
+	env_t *head;
+	hist_t *hist_head;
+	helper_t *helper;
+
+	pid = _getpid();
+	hist_head = NULL;
+	head = NULL;
+
+	if (argc > 2 || argv == NULL || envp == NULL)
+	{
+		_putstring("Please run with no argument, or one argument to run from script.");
+		_exit(9);
+	}
+
+	initEnvList(envp, &head);
+	hist_head = pull_hist(&hist_head, head);
+	helper = initHelper(head, hist_head, pid);
+
+	if (argc == 1)
+		helper->file = STDIN_FILENO;
+	else if (argc == 2)
+	{
+		helper->file = open(argv[1], O_RDONLY);
+		if (helper->file == -1)
+		{
+			_putstring("Error opening script file: ");
+			_putstring(argv[1]);
+			_putchar('\n');
+			_exit(9);
+		}
+	}
+
+	helper->type = getTermType(helper->file);
+
+	return (helper);
+}
+
+
+/**
+ * checkLocal - checking if local
+ * @tok: tokenized input
+ * @helper: helper struct
+ * @save: ptr of the token after @tok
  *
- *
- *
- *
+ * Return: 0 if success, 1 if fail, and 127 if no such file found
  */
 int checkLocal(char *tok, helper_t *helper, char *save)
 {
@@ -134,8 +147,9 @@ int checkLocal(char *tok, helper_t *helper, char *save)
  *
  * @inp: input string from main
  * @save: saveptr for tokens
+ * @helper: the ptr to the helper struct
  *
- * Return: returns 1 on success, 0 on failure.
+ * Return: returns 0 on success, 1 on failure.
  */
 int checkBuiltins(char *inp, char *save, helper_t *helper)
 {
@@ -144,14 +158,14 @@ int checkBuiltins(char *inp, char *save, helper_t *helper)
 	hist_t *hist_head;
 
 	hist_head = helper->hist_head;
-	if (allstrcmp(inp, "env") == 0) /*if the first word is env, run env*/
+	if (allstrcmp(inp, "env") == 0)
 		listEnv(&helper->env);
-	else if (allstrcmp(inp, "exit") == 0) /* probably split this into a dif func*/
+	else if (allstrcmp(inp, "exit") == 0)
 	{
 		tok = splitstr(NULL, &delim, &save);
 		exitBuiltin(tok, inp, helper);
 	}
-	else if (allstrcmp(inp, "setenv") == 0) /*setenv*/
+	else if (allstrcmp(inp, "setenv") == 0)
 	{
 		tok = splitstr(NULL, &delim, &save);
 		value = splitstr(NULL, &delim, &save);
@@ -193,7 +207,14 @@ int getTermType(int file)
 	}
 	return (-1);
 }
-
+/**
+ * initHelper - fills and intialize values of the helper struct
+ * @env: the head of the env linked list
+ * @hist_head: the head of the hist linked list
+ * @pid: the pid of the parents process
+ *
+ * Return: the ptr of the struct helper
+ */
 helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid)
 {
 	helper_t *helper;
@@ -223,6 +244,7 @@ helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid)
  * @inp: input string we're working with
  * @argv: program argv
  * @save: splitstring save pointer
+ * @helper: ptr to the helper struct
  *
  * Return: returns 1 if program ran, 0 if some sort of error
  */
@@ -293,6 +315,7 @@ int checkPath(char *inp, char *argv[], char *save, helper_t *helper)
  * freeArgs - frees a 2d array
  *
  * @args: argument array
+ * @envsize: the size of the array holding the environment variables
  */
 void freeArgs(char **args, int envsize)
 {
@@ -310,6 +333,7 @@ void freeArgs(char **args, int envsize)
  * getArgs - creates a 2d array of arguments
  * last argument will be null, first will be main's argv[0]
  *
+ * @tok: tokenized input
  * @argv: argv for main
  * @save: saveptr for arguments
  * Return: returns a 2d array
@@ -347,6 +371,8 @@ char **getArgs(char *tok, char *argv[], char *save)
  *
  * @name: name of program (including whole path)
  * @argv: 2d array of arguments, either from main, or from getArgs
+ * @helper: ptr to the helper struct
+ * 
  * Return: returns -1 on failure, or the exit status of the child
  */
 int runProg(char *name, char *argv[], helper_t *helper)
@@ -379,8 +405,10 @@ int runProg(char *name, char *argv[], helper_t *helper)
 	}
 
 }
-
-
+/**
+ * sighandler - the signal handler
+ * @signum: a signal number corresponding to the signal
+ */
 void sighandler(int signum)
 {
 	(void) signum;

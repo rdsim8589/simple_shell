@@ -43,7 +43,13 @@ char *get_line(int file, helper_t *helper)
 	helper->bufhead = buf;
 	return (buf);
 }
-
+/**
+ * parseDelimiters - replace delimiters with '\0'
+ * @buf: the buffer
+ * @helper: the helper struct
+ *
+ * Return: the buffer
+ */
 char *parseDelimiters(char *buf, helper_t *helper)
 {
 	int i, j;
@@ -69,7 +75,12 @@ char *parseDelimiters(char *buf, helper_t *helper)
 	(helper->linecount) = j + 1;
 	return (buf);
 }
-
+/**
+ * countBuf - count and save the length of buf after parse comments,
+ * parse the dollar and removed excess white space.
+ * @buf: buffer after it's been expanded
+ * @helper: the helper struct
+ */
 void countBuf(char *buf, helper_t *helper)
 {
 	int i;
@@ -79,7 +90,13 @@ void countBuf(char *buf, helper_t *helper)
 	(*helper->total) = i;
 	(*helper->printed) = 0;
 }
-
+/**
+ * countLine - counts the len of a line after delimiter have been
+ * replaced with '\0'
+ * @buf: buffer
+ * @helper: the helper struct
+ *
+ */
 void countLine(char *buf, helper_t *helper)
 {
 	int i, j;

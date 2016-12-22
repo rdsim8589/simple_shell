@@ -1,11 +1,11 @@
- #include "shell.h"
+#include "shell.h"
 
 /**
  * cdBuiltin - function to execute the builtin CD command
  * sets the pwd and oldpwd environmental variables appropriately
  *
  * @save: saveptr for tokens
- * @head: env_t head
+ * @helper: ptr to the helper struct
  * Return: 1 on success, 0 on failure
  */
 int cdBuiltin(char *save, helper_t *helper)
@@ -53,7 +53,6 @@ int cdBuiltin(char *save, helper_t *helper)
  *
  * @tok: argument for exitBuiltin
  * @inp: input (to free)
- * @environ: environ double pointer
  * @helper: helper struct
  */
 void exitBuiltin(char *tok, char *inp, helper_t *helper)

@@ -91,9 +91,9 @@ char *parseDollar(char *buf, helper_t *helper)
 	return (buf);
 }
 
-		char *sliceCat(char *buf, helper_t *helper)
-		{
-		}
+char *sliceCat(char *buf, helper_t *helper)
+{
+}
 
 char *parseComments(char *buf, helper_t *helper)
 {

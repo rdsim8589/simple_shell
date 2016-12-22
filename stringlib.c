@@ -135,7 +135,7 @@ char *_strcat(char *dest, char *src)
 	return (dest);
 }
 
-/**
+ /**
  * _memset - fills memory with constant bytes
  *
  * @s: location to fill

@@ -47,14 +47,20 @@ typedef struct hist_s
 	char *entry;
 	struct hist_s *next;
 } hist_t;
+
 /**
  * struct helper_s - a helper struct
+ * @bufhead: ptr to the start of the buffer
  * @hist_head: head to the hist linked list
  * @env: head to the env hist linke list
- * @total: an int of the total number of bytes read
- * @bufsize: an int of the bufsize
- * @printed: 
- * @last:
+ * @total: the total bytes read from get_line
+ * @bufsize: the bufsize
+ * @printed: the number of bytes that have printed
+ * @last: holds the index for the start of the next line
+ * @pid: the pid
+ * @lastExit: the status of a fork
+ * @file: holds the value of the file descriptor
+ * @type: if file is in terminal or a pipe
  *
  * Description:
  */
@@ -170,9 +176,11 @@ void helpHistory(void);
 
 
 char *_memset(char *s, char b, unsigned int);
+void sighandler(int signum);
+int _isalphanum(int c);
 
 void sighandler(int signum);
-
+char *_strcat(char *dest, char *src);
 helper_t *setupMain(int argc, char **argv, char **envp);
 int checkLocal(char *tok, helper_t *helper, char *save);
 char *bufferDelete(char *buf, helper_t *helper, int index, int times);

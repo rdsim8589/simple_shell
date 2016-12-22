@@ -1,6 +1,5 @@
 #include "shell.h"
 
-
 /**
  * initEnvList - turns the environment list into a linked list
  *
