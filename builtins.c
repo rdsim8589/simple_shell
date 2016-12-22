@@ -62,7 +62,7 @@ void exitBuiltin(char *tok, char *inp, helper_t *helper)
 	if (tok != NULL)
 		i = _atoi(tok);
 	else
-		i = helper->lastExit;
+		i = 0;
 	push_hist(helper->hist_head, helper->env);
 	if (inp != NULL)
 	{
