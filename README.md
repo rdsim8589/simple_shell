@@ -26,17 +26,6 @@ The shell reads input in terms of lines from a file and breaks it up into words 
     Operator
 	&&  ;  ||  |
 
-### Aliases
- An alias is a name and corresponding value set using the alias(1) builtin command.  Whenever a reserved word may occur (see above), and after checking for reserved words, the shell checks the word to see if it matches an alias.  If it does, it replaces it in the input stream with its value.  For example, if there is an alias called “lf” with the value “ls -F”, thenthe input:
-
-      lf foobar ⟨return⟩
-
-would become
-
-      ls -F foobar ⟨return⟩
-
-Aliases provide a convenient way for naive users to create shorthands for commands without having to learn how to create functions with arguments.  They can also be used to create lexically obscure code. This use is discouraged.
-
 
 ### Simple Commands
  If a simple command has been recognized, the shell performs the following actions:
@@ -51,6 +40,13 @@ This section lists the builtin commands which are builtin because they need to p
 
 ####alias [name[=string ...]]
 If name=string is specified, the shell defines the alias name with value string.  If just name is specified, the value of the alias name is printed.  With no arguments, the alias builtin prints the names and values of all defined aliases (see unalias).
+For example, if there is an alias called “lf” with the value “ls -F”, thenthe input:
+
+      lf foobar ⟨return⟩
+
+would become
+
+      ls -F foobar ⟨return⟩
 
 ####cd [-LP] [directory]
 Switch to the specified directory (default HOME).  If an entry for CDPATH appears in the environment of the cd command or the shell variable CDPATH is set and the directory name does not begin with a slash, then the directories listed in CDPATH will be searched for the specified directory.  The format of CDPATH is the same as that of PATH.  If a single dash is specified as the argument, it will be replaced by the value of OLDPWD.  The cd command will print out the name of the directory that it actually switched to if this is different from the name that the user gave.  These may be different either because the CDPATH mechanism was used or because the argument is a single dash.  The -P option causes the physical directory structure to be used, that is, all symbolic links are resolved to their respective values.  The -L option turns off the effect of any preceding -P options.
