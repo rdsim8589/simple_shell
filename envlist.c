@@ -1,6 +1,5 @@
 #include "shell.h"
 
-
 /**
  * initEnvList - turns the environment list into a linked list
  *
@@ -20,7 +19,7 @@ env_t *initEnvList(char **environ, env_t **head)
 	i = 0;
 	while (environ[i] != NULL)
 	{
-		newnode = malloc(sizeof(env_t));
+		newnode = mloc(sizeof(env_t), NULL);
 		if (newnode == NULL)
 			return (NULL);
 		temp = _strdup(environ[i]);
@@ -49,7 +48,6 @@ env_t *initEnvList(char **environ, env_t **head)
 	return (*head);
 }
 
-
 /**
  * buildEnv - builds a 2d array from our linked list so we can send
  * it to our child processes
@@ -75,7 +73,7 @@ char **buildEnv(env_t *head, int *envsize)
 	}
 	*envsize = i;
 	temp = head;
-	envs = malloc(sizeof(char *) * (i + 1));
+	envs = mloc(sizeof(char *) * (i + 1), NULL);
 	i = 0;
 	while (temp != NULL)
 	{
@@ -130,7 +128,7 @@ env_t *addEnv(env_t **head, char *name, char *value)
 
 	if (head == NULL || name == NULL || value == NULL)
 		return (NULL);
-	newnode = malloc(sizeof(env_t));
+	newnode = mloc(sizeof(env_t), NULL);
 	if (newnode == NULL)
 		return (NULL);
 	newnode->name = _strdup(name);
@@ -149,4 +147,25 @@ env_t *addEnv(env_t **head, char *name, char *value)
 		tempnode->next = newnode;
 	}
 	return (newnode);
+}
+
+/**
+ * getEnvPtr - gets a pointer to a matching environment variable
+ *
+ * @name: name of environment variable to search for
+ * @head: the head of the env linked list
+ * Return: returns a pointer to the environment variable, or NULL if none found
+ */
+env_t *getEnvPtr(char *name, env_t *head)
+{
+	env_t *environ;
+
+	environ = head;
+	while (environ != NULL)
+	{
+		if (allstrcmp(name, environ->name) == 0)
+			return (environ);
+		environ = environ->next;
+	}
+	return (NULL);
 }

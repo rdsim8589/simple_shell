@@ -1,192 +1,162 @@
 #include "shell.h"
-
 /**
  * main - entry point for shell program
  * loops input for a shell, splits them into appropriate actions
  *
  * @argc: argument count
  * @argv: arguments passed
+ * @envp: list of environment names and their values
+ *
  * Return: return values in man page
  */
-int main(int argc, char *argv[], char*env[])
+int main(int argc, char *argv[], char *envp[])
 {
-	char *save, *tok, *inp, **args;
+	helper_t *helper;
+	char *save, *tok, *inp, **args, *buf;
 	char delim = ' ';
-	env_t *head;
-	int file;
 
-	head = NULL;
-	if (argc == 1)
-		file = STDIN_FILENO;
-	else if (argc == 2)
-	{
-       		file = open(argv[1], O_RDONLY);
-		if (file == -1)
-		{
-			_putstring("Error opening file.");
-			_exit(9);
-		}
-	}
-	else
-	{
-		_putstring("Please run with no argument, or one argument to run from script.");
-		_exit(9);
-	}
-	(void) argc; /* need to use this to check to check for scripts later!*/
-	signal(SIGINT, SIG_IGN); /* Ignore any SIGINT (ctrl-c) signal */
-	initEnvList(env, &head);
+	helper = setupMain(argc, argv, envp);
+	signal(SIGINT, sighandler);
 	while (1)
 	{
-		if (argc == 1)
-		    prompt();
-		inp = get_line(file);
-		args = NULL;
-	        while (inp != NULL)
+		while ((*helper->total) <= 0)
 		{
-			tok = splitstr(inp, &delim, &save);
-			if (checkBuiltins(inp, save, &head) == 0)
-			{
-				if (tok[0] == '.' && tok[1] == '/')
-				{
-					tok = tok + 2;
-					if (access(tok, X_OK) == 0)
-					{
-						args = getArgs(tok, argv, save);
-						runProg(tok, args, head);
-					}
-					else
-					{
-						tok = (tok - 2);
-						_putstring(tok);
-						_putstring(": No such file or directory.\n");
-					}
-				}
-				else
-					if (checkPath(tok, args, save, head) == 0)
-					{
-						_putstring(tok); _putstring(": command not found.\n");
-					}
-			}
-			inp = get_line(file);
-			save = NULL;
+			if (argc == 1 && helper->type == 1)
+				prompt();
+			buf = get_line(helper->file, helper);
 		}
-		if (inp == NULL && argc == 2)
+		inp = mloc(*helper->bufsize, helper);
+		inp = _memcpy(inp, buf, (*helper->bufsize));
+		(helper->inphead) = inp; (helper->bufhead) = buf;
+		save = NULL; args = NULL;
+		(*helper->last) = 0;
+		while (inp != NULL)
 		{
-			free(inp);
-			free_list(head);
+			countLine(buf, helper);
+			inp = parseAlias(inp, helper);
+			inp = parseDollar(inp, helper);
+			tok = splitstr(inp, &delim, &save);
+			helper->args = getArgs(tok, args, save);
+			if (checkBuiltins(inp, helper, helper->args) == 1)
+				if (checkLocal(inp, helper, helper->args) == 1)
+				{
+					helper->lastExit = checkPath(tok, helper->args, helper);
+					if (helper->lastExit != 0)
+					{ _putstring(tok); _putstring(": command not found.\n"); }
+				}
+			if (inp != NULL)
+			{ free(helper->args); helper->args = NULL; }
+			inp = moreLines(helper, buf, inp); save = NULL;
+		}
+		if (inp == NULL && (argc == 2 || helper->type == 0))
+			exitBuiltin("0", NULL, helper);
+	}
+}
+
+/**
+ * setupMain - populates helper struct, determine if given STDIN, or File,
+ * initialize the hist and env struct, grab the parent pid, and determines if
+ * file in termianl or a pipe.
+ * @argc: arugment count
+ * @argv: arguements passed
+ * @envp: list of environment names and their values
+ *
+ * Return: the helper struct
+ */
+helper_t *setupMain(int argc, char **argv, char **envp)
+{
+	char *pid;
+	env_t *head;
+	hist_t *hist_head;
+	helper_t *helper;
+	alias_t *alias;
+
+	pid = _getpid();
+	hist_head = NULL;
+	head = NULL;
+	alias = NULL;
+
+	if (argc > 2 || argv == NULL || envp == NULL)
+	{
+		_putstring("Please run with no argument, or filename to run from script.");
+		_exit(9);
+	}
+
+	initEnvList(envp, &head);
+	hist_head = pull_hist(&hist_head, head);
+	helper = initHelper(head, hist_head, pid);
+	helper->alias = alias;
+
+	if (argc == 1)
+		helper->file = STDIN_FILENO;
+	else if (argc == 2)
+	{
+		helper->file = open(argv[1], O_RDONLY);
+		if (helper->file == -1)
+		{
+			_putstring("Error opening script file: ");
+			_putstring(argv[1]);
+			_putchar('\n');
 			_exit(9);
 		}
 	}
-}
 
-/**
- * checkPath - checks to see if a program is located in $PATH
- * if it is, will ruin the program and return 1
- *
- * @inp: input string we're working with
- * @argv: program argv
- * @save: splitstring save pointer
- *
- * Return: returns 1 if program ran, 0 if some sort of error
- */
-int checkPath(char *inp, char *argv[], char *save, env_t *head)
-{
-	int j;
-	char *temp, *path[PATHSIZE], *tok, **args, *pathsave, *paths;
-	char colon = ':';
+	helper->type = getTermType(helper->file);
 
-	if (getEnvPtr("PATH", head) != NULL)
-	{
-		j = 0;
-		paths = _strdup((getEnvPtr("PATH", head))->value); /* tmp to avoid mangling env */
-		tok = splitstr(paths, &colon, &pathsave);
-		while (tok != NULL)
-		{
-			path[j++] = tok;
-			tok = splitstr(NULL, &colon, &pathsave);
-		}
-		path[j] = NULL;
-		tok = inp; j = 0;
-		while (path[j] != NULL)
-		{
-			temp = dir_concat(path[j], tok);
-			if (access(temp, X_OK) == 0)
-			{
-				args = getArgs(tok, argv, save);
-				runProg(temp, args, head);
-				break;
-			}
-			if (temp != NULL)
-			{
-				free(temp);
-				temp = NULL;
-			}
-			j++;
-		}
-		if (path[j] != NULL)
-		{
-			if (temp != NULL)
-				free(temp);
-			free(paths);
-			return (1); /* Need to free 2d array for path either way, on return 1 or 0! */
-		}
-	}
-	free(paths);
-	free(temp);
-	return (0);
-
+	return (helper);
 }
 
 
 /**
- * freeArgs - frees a 2d array
+ * getTermType - checks if file is in terminal, or if file is has a pipe
+ * @file: typically STDIN_FILENO
  *
- * @args: argument array
+ * Return: 1 if in terminal, 0 if pipe and -1 if fail
  */
-void freeArgs(char **args, int envsize)
+int getTermType(int file)
 {
-	int i;
+	struct stat st;
 
-	for (i = 0; i < envsize; i++)
+	fstat(file, &st);
+	if (S_ISCHR(st.st_mode))
 	{
-		free(args[i]);
+		return (1);
 	}
-	free(args);
+	else if (S_ISFIFO(st.st_mode))
+	{
+		return (0);
+	}
+	return (-1);
 }
-
-
 /**
- * getArgs - creates a 2d array of arguments
- * last argument will be null, first will be main's argv[0]
+ * initHelper - fills and intialize values of the helper struct
+ * @env: the head of the env linked list
+ * @hist_head: the head of the hist linked list
+ * @pid: the pid of the parents process
  *
- * @argv: argv for main
- * @save: saveptr for arguments
- * Return: returns a 2d array
+ * Return: the ptr of the struct helper
  */
-char **getArgs(char *tok, char *argv[], char *save)
+helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid)
 {
-	char **args;
-	char *arg;
-	char delim = ' ';
-	int i;
+	helper_t *helper;
 
-/* Need a clever way to get the number of args before allocating
- * Currently this just allocates space out for 100 pntrs, that's... a lot
- */
-	(void) argv;
-	args = malloc(sizeof(char *) * 1000);
-	arg = NULL;
-	args[0] = tok;
-	arg = splitstr(NULL, &delim, &save);
-	i = 1;
-	while (arg != NULL)
-	{
-		args[i++] = arg;
-		arg = splitstr(NULL, &delim, &save);
-	}
-	args[i] = NULL;
+	helper = mloc(sizeof(helper_t), NULL);
+	helper->env = env;
+	helper->hist_head = hist_head;
+	helper->printed = mloc(sizeof(int) * 1, NULL);
+	*(helper->printed) = 0;
+	helper->total = mloc(sizeof(long) * 1, NULL);
+	*(helper->total) = 0;
+	helper->bufsize = mloc(sizeof(int) * 1, NULL);
+	*(helper->bufsize) = 1024;
+	helper->last = mloc(sizeof(int) * 1, NULL);
+	*(helper->last) = 0;
+	helper->args = NULL;
+	helper->pid = pid;
+	helper->lastExit = 0;
+	helper->alias = NULL;
 
-	return (args);
+	return (helper);
 }
 
 
@@ -195,15 +165,17 @@ char **getArgs(char *tok, char *argv[], char *save)
  *
  * @name: name of program (including whole path)
  * @argv: 2d array of arguments, either from main, or from getArgs
+ * @helper: ptr to the helper struct
+ *
  * Return: returns -1 on failure, or the exit status of the child
  */
-int runProg(char *name, char *argv[], env_t *head)
+int runProg(char *name, char *argv[], helper_t *helper)
 {
 	pid_t cpid;
 	int cstatus, envsize;
 	char **envs;
 
-	envs = buildEnv(head, &envsize);
+	envs = buildEnv(helper->env, &envsize);
 	cpid = fork();
 	if (cpid == -1) /* if fork returns -1, it failed */
 	{
@@ -216,12 +188,11 @@ int runProg(char *name, char *argv[], env_t *head)
 		_putstring("Attempted to run unknown command: ");
 		_putstring(name);
 		_putchar('\n');
-		return (-1);
+		exit(-1);
 	}
 	else /* if neither are true, we're in the parent */
 	{
 		wait(&cstatus); /* wait til we get back */
-		free(argv);
 		freeArgs(envs, envsize);
 		return (cstatus); /* now return the child's exit status */
 	}

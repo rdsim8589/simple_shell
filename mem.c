@@ -56,3 +56,27 @@ char *_memcpy(char *dest, char *src, unsigned int n)
 	}
 	return (dest);
 }
+
+/**
+ * mloc - malloc function that bails out on failure and attempts to free
+ * might miss some stuff (like the buffer) however. if helper is supplied
+ * NULL, mloc will just exit on code 98.
+ *
+ * @b: size to malloc
+ * @helper: helper func so we can free it out if needed
+ * Return: returns malloc'd space, or nothing on failure (exits)
+ */
+void *mloc(unsigned int b, helper_t *helper)
+{
+	void *pointer;
+
+	pointer = malloc(b);
+	if (pointer == NULL)
+	{
+		perror("Memory allocation failure. Bailing out!");
+		if (helper == NULL)
+			_exit(98);
+		exitBuiltin("98", NULL, helper);
+	}
+	return (pointer);
+}

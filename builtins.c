@@ -4,138 +4,118 @@
  * cdBuiltin - function to execute the builtin CD command
  * sets the pwd and oldpwd environmental variables appropriately
  *
- * @save: saveptr for tokens
+ * @args: tokenized arguments
+ * @helper: ptr to the helper struct
  * Return: 1 on success, 0 on failure
  */
-int cdBuiltin(char *save, env_t *head)
+int cdBuiltin(char **args, helper_t *helper)
 {
 	char *oldcwd, *home, *tok;
-	char delim = ' ';
 
-	tok = NULL;
+	tok = args[1];
 	oldcwd = getcwd(NULL, 100);
-	home = (getEnvPtr("HOME", head))->value;
+	home = (getEnvPtr("HOME", helper->env))->value;
 
-	tok = splitstr(NULL, &delim, &save);
 	if (tok == NULL) /*If no argument, we want to go HOME */
 	{
-		chdir(home); /*Change to the home directory, we need to error check this!*/
-		setEnvPtr("PWD", home, head); /*sets PWD to home, since we're going there, and OLDPWD to where we're at now*/
-		setEnvPtr("OLDPWD", oldcwd, head); /*this function should never fail, so probably don't need to error check*/
+		chdir(home);
+		setEnvPtr("PWD", home, helper->env);
+		setEnvPtr("OLDPWD", oldcwd, helper->env);
 		free(oldcwd);
 		return (1); /*return 1, success*/
 	}
-	if (tok[0] == '-') /*if we do cd -*/
+	if (tok[0] == '-' && tok[1] == '\0') /*if we do cd -*/
 	{
-		if (getEnvPtr("OLDPWD", head) == NULL)
+		if (getEnvPtr("OLDPWD", helper->env) == NULL)
 		{
-			_putstring("cd: OLDPWD not set"); /*if we don't have an OLDPWD, can't go there*/
+			_putstring("cd: OLDPWD not set.\n");
 			free(oldcwd);
 			return (0);
 		}
-		tok = (getEnvPtr("OLDPWD", head))->value; /*if we do, advance the ptr by 7 to get past OLDPWD=*/
+		tok = (getEnvPtr("OLDPWD", helper->env))->value;
+		_putstring(tok);
+		_putchar(10);
 	}
-	if (chdir(tok) != -1) /*can we go there? this includes OLDPWD*/
+	if (chdir(tok) != -1)
 	{
-		setEnvPtr("PWD", tok, head); /*if so, set our PWD and OLDPWD and bounce*/
-		setEnvPtr("OLDPWD", oldcwd, head);
+		setEnvPtr("PWD", tok, helper->env);
+		setEnvPtr("OLDPWD", oldcwd, helper->env);
 		free(oldcwd);
 		return (1);
 	}
-	_putstring("cd: Invalid folder."); /* Need error codes for why it's invalid!
-					    *  Need to know if it's an access issue,
-					    * or the folder simply doesn't exist.
-					    */
+	_putstring("cd: Invalid folder.\n");
 	free(oldcwd);
 	return (0);
 }
 
 /**
- * checkBuiltins - checks for builtin commands matching the first inputted word
+ * exitBuiltin - executes the exit builtin and exits clean
  *
- * @inp: input string from main
- * @save: saveptr for tokens
- *
- * Return: returns 1 on success, 0 on failure.
+ * @tok: argument for exitBuiltin
+ * @inp: input (to free)
+ * @helper: helper struct
  */
-int checkBuiltins(char *inp, char *save, env_t **environ)
+void exitBuiltin(char *tok, char *inp, helper_t *helper)
 {
 	int i;
-	char *value, *tok;
-	env_t *walk;
-	char delim = ' ';
 
-	walk = *environ;
-	if (allstrcmp(inp, "env") == 0) /*if the first word is env, run env*/
-	{
-		while (walk != NULL)
-		{
-			_putstring(walk->name);
-			_putchar('=');
-			_putstring(walk->value);
-			_putchar('\n');
-			walk = walk->next;
-		}
-	}
-	else if (allstrcmp(inp, "exit") == 0) /* probably split this into a dif func*/
-	{
-		tok = splitstr(NULL, &delim, &save);
-		free(inp);
-		free_list(*environ);
-		if (tok != NULL)
-			i = atoi(tok); /*atoi if there's an arg so we can exit w/ different statuses*/
-		else
-			i = 0;
-		_exit(i);
-	}
-	else if (allstrcmp(inp, "setenv") == 0) /*setenv*/
-	{
-		tok = splitstr(NULL, &delim, &save);
-		value = splitstr(NULL, &delim, &save);
-		setEnvPtr(tok, value, *environ);
-	}
-	else if (allstrcmp(inp, "unsetenv") == 0)
-	{
-		tok = splitstr(NULL, &delim, &save);
-		return (unsetEnv(tok, environ));
-	}
-	else if (allstrcmp(inp, "history") == 0)
-		_putstring("Run history");
-	else if (allstrcmp(inp, "cd") == 0)
-		cdBuiltin(save, *environ);
-	else if (allstrcmp(inp, "help") == 0)
-		_putstring("Run help");
+	if (tok != NULL)
+		i = _atoi(tok);
 	else
-		return (0);
-
-	return (1);
+		i = 0;
+	push_hist(helper->hist_head, helper->env);
+	if (inp != NULL)
+	{
+		if (inp != helper->bufhead)
+			free(helper->bufhead);
+		free(inp);
+	}
+	clear_hist(&(helper->hist_head));
+	free_list(helper->env);
+	free(helper->printed);
+	free(helper->total);
+	free(helper->last);
+	free(helper->bufsize);
+	free(helper->pid);
+	if (helper->alias != NULL)
+		free_alist(helper->alias);
+	if (helper->args != NULL)
+		free(helper->args);
+	free(helper);
+	_exit(i & 255);
 }
 
-
 /**
- * getEnvPtr - gets a pointer to a matching environment variable
+ * listEnv - prints the list of environ variables
  *
- * @name: name of environment variable to search for
- * Return: returns a pointer to the variable, or NULL if none found
+ * @environ: environ_t head
+ * Return: Returns -1 on failure or 1 on success
  */
-
-env_t *getEnvPtr(char *name, env_t *head)
+int listEnv(env_t **environ)
 {
-	env_t *environ;
+	env_t *walk;
 
-	environ = head;
-	while (environ != NULL)
+	walk = *environ;
+	if (walk == NULL)
 	{
-		if (_strcmp(name, environ->name) == 0)
-			return (environ);
-		environ = environ->next;
+		_putstring("Issue printing environment variables!");
+		return (-1);
 	}
-	return (NULL);
+	while (walk != NULL)
+	{
+		_putstring(walk->name);
+		_putchar('=');
+		_putstring(walk->value);
+		_putchar('\n');
+		walk = walk->next;
+	}
+	return (1);
 }
 
 /**
  * unsetEnv - removes an environmental variable
  *
+ * @head: head of environment list
  * @name: name of environmental variable to remove
  * Return: returns 1 on success, -1 on failure
  */
@@ -147,7 +127,7 @@ int unsetEnv(char *name, env_t **head)
 	temp = *head;
 	if (name == NULL)
 	{
-		_putstring("Invalid name.");
+		_putstring("Invalid name.\n");
 		return (-1);
 	}
 	i = 0;
@@ -175,7 +155,7 @@ int unsetEnv(char *name, env_t **head)
 		temp = temp->next;
 		i++;
 	}
-	_putstring("No such environmental variable.");
+	_putstring("No such environmental variable.\n");
 	return (-1);
 }
 
@@ -185,9 +165,11 @@ int unsetEnv(char *name, env_t **head)
  * creates a new one if none found
  *
  * @envname: Name to variable to set/create
- * @vale: Value for environmental varialbe
+ * @value: Value for environmental variable
+ * @head: head of env_t linked list
  * Return: returns a pointer to the new environmental variable
- * need to error check the malloc'd returns and return null on fail
+ *
+ * TODO: need to error check the malloc'd returns and return null on fail
  */
 env_t *setEnvPtr(char *envname, char *value, env_t *head)
 {
@@ -209,9 +191,9 @@ env_t *setEnvPtr(char *envname, char *value, env_t *head)
 	if (environ != NULL)
 	{
 		newvalue = _strdup(value);
-		free (environ->value);
+		free(environ->value);
 		environ->value = newvalue;
-		return(environ);
+		return (environ);
 	}
 	return (addEnv(&head, envname, value)); /*return the result*/
 }
