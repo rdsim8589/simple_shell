@@ -40,7 +40,7 @@ This section lists the builtin commands which are builtin because they need to p
 
 ####alias [name[=string ...]]
 If name=string is specified, the shell defines the alias name with value string.  If just name is specified, the value of the alias name is printed.  With no arguments, the alias builtin prints the names and values of all defined aliases (see unalias).
-For example, if there is an alias called “lf” with the value “ls -F”, thenthe input:
+For example, if there is an alias called “lf” with the value “ls -F”, then the input:
 
       lf foobar ⟨return⟩
 
