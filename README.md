@@ -1,6 +1,6 @@
 # simple_shell
-A simple shell created for Holberton School. Partner project with @rdsim8589 &amp; @wintermanc3r
-.\" Contact timothy.britton@holbertonschool.com or richard.sim@holbertonschool.com to correct errors or typos.
+A simple shell created for Holberton School project. Partner project with @rdsim8589 &amp; @wintermanc3r
+Contact timothy.britton@holbertonschool.com or richard.sim@holbertonschool.com to correct errors or typos.
 
 
 ## simple_shell - simple_shell is an sh-compatible command language interpreter that executes commands from the stand input or from a file.
@@ -8,9 +8,15 @@ A simple shell created for Holberton School. Partner project with @rdsim8589 &am
 simple_shell [command_string | file]
 
 ## DESCRIPTION
-simple_shell is an sh-compatible command language interpreter that executes commands read from the standard input or from a file.h.
+simple_shell is an sh-compatible command language interpreter that executes commands read from the standard input or from a file.h. Simple shell works similarly to Bash.
 
-simple_shell is intended to be a conformant implementation of the Shell and Utilities portion of the IEEE POSIX specification (IEEE Standard 1003.1). simple_shell can be configured to be POSIX-conformant by default.
+## QUICK START
+To start up simple_shell, compile using `gcc 4.8.4 -Wall -Werror -Wextra -pedantic *.c -o hsh`.
+
+run
+```
+./hsh
+```
 ### Overview
 The simple_shell is a command that reads lines from either a file or the terminal, interprets them, and generally executes other commands.  It is the program that is running when the user runs gcc -Wall -Werror -Wextra -pedantic *.c -o hsh and runs the executable file, ./hsh. The simple_shell implements a language that has flow control constructs, a macro facility that provides a variety of features in addition to data storage, along with built in history and line editing capabilities.  It incorporates many features to aid interactive use and has the advantage that the interpretative language is common to both interactive and non-interactive use (shell scripts).  That is, commands can be typed directly to the running shell or can be put into a file and the file can be executed directly by the shell.
 
@@ -31,9 +37,6 @@ would become
 
 Aliases provide a convenient way for naive users to create shorthands for commands without having to learn how to create functions with arguments.  They can also be used to create lexically obscure code. This use is discouraged.
 
-
-.\" Manpage for Simple Shell.
-.\" Contact timothy.britton@holbertonschool.com or richard.sim@holbertonschool to correct errors or typos.
 
 ### Simple Commands
  If a simple command has been recognized, the shell performs the following actions:
@@ -71,43 +74,12 @@ The setenv() built-in adds the variable name to the environment with the value v
 #### unsetenv [VARIABLE]
 The unsetenv() built-in deletes the variable name from the environment. If name does not exist in the environment, then the functionsucceeds, and the environment is unchanged.
 
-
-
 #### unalias [-a] [name]
 If name is specified, the shell removes that alias.  If -a is specified, all aliases are removed.
 
-### Environment
-####HOME       Set automatically by login(1) from the user's login directory in the password file (passwd(4)).  This environment variable also functions as the default argument for the cd builtin.
 
-####PATH       The default search path for executables.  See the above section Path Search.
+### external functions
+The simple shell will support all functions that can be found within a PATH
 
-####CDPATH     The search path used with the cd builtin.
-
-####MAIL       The name of a mail file, that will be checked for the arrival of new mail.  Overridden by MAILPATH.
-
-####MAILCHECK  The frequency in seconds that the shell checks for the arrival of mail in the files specified by the MAILPATH or the MAIL file.  If set to 0, the check will occur at each prompt.
-
-####MAILPATH   A colon “:” separated list of file names, for the shell to check for incoming mail.  This environment setting overrides the MAIL setting.  There is a maximum of 10 mailboxes that can be monitored at once.
-
-####PS1        The primary prompt string, which defaults to “$ ”, unless you are the superuser, in which case it defaults to “# ”.
-
-####PS2        The secondary prompt string, which defaults to “> ”.
-
-####PS4        Output before each line when execution trace (set -x) is enabled, defaults to “+ ”.
-
-####IFS        Input Field Separators.  This is normally set to ⟨space⟩, ⟨tab⟩, and ⟨newline⟩.  See the White Space Splitting section for more details.
-
-####TERM       The default terminal setting for the shell.  This is inherited by children of the shell, and is used in the history editing modes.
-
-####HISTSIZE   The number of lines in the history buffer for the shell.
-
-####PWD        The logical value of the current working directory.  This is set by the cd command.
-
-####OLDPWD     The previous logical value of the current working directory.  This is set by the cd command.
-
-####PPID       The process ID of the parent process of the shell.
-
-.SH BUGS
-No known bugs.
-.SH AUTHOR
-(Timothy Britton) timothy.britton@holbertonschool.com and (Richard Sim) richard.sim@holbertonschool.com
+#### examples
+ls, cat, and grep.
