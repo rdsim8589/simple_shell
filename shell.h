@@ -61,6 +61,9 @@ typedef struct hist_s
  * @lastExit: the status of a fork
  * @file: holds the value of the file descriptor
  * @type: if file is in terminal or a pipe
+ * @linecount: current linecount
+ * @bufnext: pointer for next location in the buffer
+ * @inphead: pointer to the head of the input list
  *
  * Description:
  */
@@ -85,7 +88,7 @@ typedef struct helper_s
 
 char *moreLines(helper_t *helper, char *buf, char *inp);
 char *parseDelimiters(char *buf, helper_t *helper);
-void countBuf(char *buf, helper_t *helper);
+void *countBuf(char *buf, helper_t *helper);
 void countLine(char *buf, helper_t *helper);
 
 /* builtins */
@@ -187,6 +190,8 @@ char *bufferDelete(char *buf, helper_t *helper, int index, int times);
 char *parseComments(char *buf, helper_t *helper);
 int isDelimiter(char c);
 int isWhitespace(char c);
-
+char *insertEnvValue(char *a, char *value, helper_t *helper, int, char *name);
+char *insertPid(char *buf, helper_t *helper, int start);
+char *insertLastExit(char *buf, helper_t *helper, int start);
 char *_strcat(char *dest, char *src);
 #endif

@@ -1,4 +1,4 @@
-#include "shell.h"
+ #include "shell.h"
 
 
 /**
@@ -15,6 +15,7 @@ char *get_line(int file, helper_t *helper)
 	long readval;
 
 	buf = malloc(sizeof(char) * (*helper->bufsize));
+	(helper->bufhead) = buf;
 	_memset(buf, '\0', (*helper->bufsize));
 	readval = read(file, buf, *helper->bufsize);
 	(*helper->total) = readval;
@@ -39,6 +40,11 @@ char *get_line(int file, helper_t *helper)
 	buf = whitespace(buf, helper);
 	buf = parseComments(buf, helper);
 	countBuf(buf, helper);
+	if (*helper->total <= 0)
+	{
+		free(buf);
+		return (buf);
+	}
 	buf = parseDelimiters(buf, helper);
 	helper->bufhead = buf;
 	return (buf);
@@ -80,8 +86,9 @@ char *parseDelimiters(char *buf, helper_t *helper)
  * parse the dollar and removed excess white space.
  * @buf: buffer after it's been expanded
  * @helper: the helper struct
+ * Return: returns the buffer, or NULL
  */
-void countBuf(char *buf, helper_t *helper)
+void *countBuf(char *buf, helper_t *helper)
 {
 	int i;
 
@@ -89,22 +96,23 @@ void countBuf(char *buf, helper_t *helper)
 		;
 	(*helper->total) = i;
 	(*helper->printed) = 0;
+	if (i == 0)
+		return (NULL);
+	return (buf);
 }
 /**
  * countLine - counts the len of a line after delimiter have been
  * replaced with '\0'
  * @buf: buffer
  * @helper: the helper struct
- *
  */
 void countLine(char *buf, helper_t *helper)
 {
-	int i, j;
+	int i;
 
 	i = *helper->last;
-	for (i; buf[i] != '\0'; i++)
+	for (i = i; buf[i] != '\0'; i++)
 		;
-	j = i;
 	if (buf[i + 1] == '\0' && i < *helper->total)
 	{
 		helper->linecount -= 1;
@@ -125,12 +133,14 @@ void countLine(char *buf, helper_t *helper)
  *
  * @helper: helper struct
  * @buf: buffer
+ * @inp: input line
  * Return: Returns a pointer to the next line, or NULL if there are no more
  */
 char *moreLines(helper_t *helper, char *buf, char *inp)
 {
+	(void) buf; /*need to remove buf from the prototype */
 	(helper->linecount)--;
- 	if (helper->linecount == 0)
+	if (helper->linecount == 0)
 	{
 		free(helper->inphead);
 		free(helper->bufhead);
@@ -142,59 +152,4 @@ char *moreLines(helper_t *helper, char *buf, char *inp)
 	if (*inp == '\0')
 		inp++;
 	return (inp);
-}
-
-/**
- * innerCat - 'concatenates' a string to the inside of a buffer
- * after remallocing it large and freeing old buffer.
- *
- * @buf: Buffer to insert string into.
- * @string: Null terminated string to insert.
- * @bufsize: Size of buffer.
- * @insert: Index of buffer where string is to be inserted.
- *
- * Return: returns the resized buffer.
- */
-char *innerCat(char *buf, char *string, int *bufsize, int insert)
-{
-	char *newbuf;
-	int newsize;
-
-	newsize = *bufsize + _strlen(string);
-
-	newbuf = malloc(newsize * sizeof(char));
-	_memset(newbuf, '\0', newsize);
-	_memcpy(newbuf, buf, insert);
-	_memcpy(newbuf + insert, string, _strlen(string));
-	_memcpy(newbuf + insert  + _strlen(string), buf + insert, *bufsize - insert);
-	*bufsize = newsize;
-	return (newbuf);
-}
-
-/**
- * sliceString - Cuts a substring out of a string and resizes it
- *
- * @buf: buffer to work with
- * @bufsize: size of buffer
- * @slicesize: size of the slice to be taken out
- * @index: where to slice in the buffer
- *
- * Return: Returns a resized buffer.
- */
-char *sliceString(char *buf, int *bufsize, int slicesize, int index)
-{
-	char *newbuf;
-	int newsize;
-
-	newsize = *bufsize - slicesize;
-	newbuf = malloc(newsize * sizeof(char));
-	_memset(newbuf, '\0', newsize);
-	_memcpy(newbuf, buf, index);
-	if (buf[index + slicesize] != '\0')
-	{
-		_memcpy(newbuf + index, buf + index + slicesize,
-			*bufsize - index - slicesize);
-	}
-	*bufsize = newsize;
-	return (newbuf);
 }

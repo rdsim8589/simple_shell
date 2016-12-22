@@ -62,13 +62,14 @@ void exitBuiltin(char *tok, char *inp, helper_t *helper)
 	int i;
 
 	if (tok != NULL)
-		i = atoi(tok);
+		i = _atoi(tok);
 	else
 		i = 0;
 	push_hist(helper->hist_head, helper->env);
 	if (inp != NULL)
 	{
-		free(helper->bufhead);
+		if (inp != helper->bufhead)
+			free(helper->bufhead);
 		free(inp);
 	}
 	clear_hist(&(helper->hist_head));

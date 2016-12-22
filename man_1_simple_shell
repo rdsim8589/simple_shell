@@ -43,7 +43,7 @@ Aliases provide a convenient way for naive users to create shorthands for comman
 
 
 .SS Builtins
-This section lists the builtin commands which are builtin because they need to perform some operation that can't be performed by a separate process. 
+This section lists the builtin commands which are builtin because they need to perform some operation that can't be performed by a separate process.
 
 .B alias [name[=string ...]]
 If name=string is specified, the shell defines the alias name with value string.  If just name is specified, the value of the alias name is printed.  With no arguments, the alias builtin prints the names and values of all defined aliases (see unalias).

@@ -1,100 +1,14 @@
 #include "shell.h"
 
-/**
- * whitespace - squeezes whitespace from a buffer
- *
- * @buf: buffer
- * @helper: helper struct
- * Return: returns a squeez'd buffer
- */
-char *whitespace(char *buf, helper_t *helper)
-{
-	unsigned int i;
-
-	for (i = 0; i <= *helper->total && buf[i] != '\0'; i++)
-	{
-		for (i = i; buf[i] == ' '; i++)
-		{
-			if (i == 0 || buf[i - 1] == '\n')
-				while (buf[i] == ' ')
-					buf = bufferDelete(buf, helper, i, 1);
-			if (i == 0 && (buf[i + 1] == ';' || buf[i + 1] == '\0' ||
-				       buf[i + 1] == ' ' || buf[i + 1] == '\n'))
-			{
-				while (buf[i] == ' ')
-					buf = bufferDelete(buf, helper, i, 1);
-			}
-			else if (i > 0 && buf[i] == ' '  && buf[i - 1] == ';')
-				while (buf[i] == ' ')
-					buf = bufferDelete(buf, helper, i, 1);
-		}
-	}
-	return (buf);
-}
 
 /**
- * parseDollar - parses dollarsigns from a buffer
+ * parseComments - removes comments from the buffer
  *
  * @buf: buffer
- * @helper: helper struct
+ * @helper: helper_t struct
  *
- * Return: returns a parsed buffer
+ * Return: returns parsed buffer
  */
-char *parseDollar(char *buf, helper_t *helper)
-{
-	char *name, *newbuf, *value;
-	env_t *envname, *env;
-	int i, j, k, start;
-	long change;
-	start = 0; env = helper->env;
-	for (i = 0; i < _strlen(buf); i++)
-	{
-		if (buf[i] == '$')
-		{
-			start = i + 1; j = 0; i++;
-			while (!isDelimiter(buf[i]) && (!isWhitespace(buf[i])) && buf[i] != '$')
-			{
-				i++; j++;
-			}
-			name = malloc((j + 1) * (sizeof(char)));
-			j = 0;
-			k = start;
-			while (k != i)
-				name[j++] = buf[k++];
-			name[j] = '\0';
-			envname = getEnvPtr(name, env);
-			if (envname == NULL)
-			{
-				newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
-				free(helper->inphead);
-				buf = newbuf;
-				helper->inphead = buf;
-			}
-			else
-			{
-				change = 0;
-				value = envname->value;
-				newbuf = sliceString(buf, helper->bufsize, _strlen(name) + 1, start - 1);
-				buf = innerCat(newbuf, value, helper->bufsize, start - 1);
-				free(newbuf);
-				free(helper->inphead);
-				(helper->inphead) = buf;
-			}
-			free(name);
-		}
-		if (start != 0)
-		{
-			i = start;
-			start = 0;
-		}
-	}
-	return (buf);
-}
-
-char *sliceCat(char *buf, helper_t *helper)
-{
-}
-
 char *parseComments(char *buf, helper_t *helper)
 {
 	int i;
@@ -115,16 +29,34 @@ char *parseComments(char *buf, helper_t *helper)
 	return (buf);
 }
 
+/**
+ * bufferDelete - func to delete chunks of the buffer using slicestring
+ *
+ * @buf: buffer
+ * @helper: helper struct
+ * @index: index to delete from
+ * @times: times to delete
+ *
+ * Return: returns the modified buffer
+ */
 char *bufferDelete(char *buf, helper_t *helper, int index, int times)
 {
 	char *newbuf;
 
 	newbuf = sliceString(buf, helper->bufsize, times, index);
+	free(buf);
 	buf = newbuf;
 
 	return (buf);
 }
 
+
+/**
+ * isDelimiter - checks to see if a character is a delimiter
+ *
+ * @c: char to check
+ * Return: returns 1 if it is, 0 if it isn't a delim
+ */
 int isDelimiter(char c)
 {
 	if (c == ';' || c == '\n' || c == '\0')
@@ -133,12 +65,18 @@ int isDelimiter(char c)
 		return (0);
 }
 
+/**
+ * isWhitespace - checks to see if a char is whitespace
+ *
+ * @c: char to check
+ * Return: returns 1 if it is, 0 if it isn't whitespace
+ */
 int isWhitespace(char c)
 {
 	if (c == ' ' || c == '\n' || c == '\t')
 		return (1);
 	else
-		return(0);
+		return (0);
 }
 
 /**
