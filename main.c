@@ -89,11 +89,7 @@ int main(int argc, char *argv[], char *envp[])
 			save = NULL;
 		}
 		if (inp == NULL && (argc == 2 || helper->type == 0))
-		{
-			free(inp);
-			free_list(helper->env);
-			_exit(9);
-		}
+			exitBuiltin("0", NULL, helper);
 	}
 }
 
@@ -153,7 +149,6 @@ int checkBuiltins(char *inp, char *save, helper_t *helper)
 	else if (allstrcmp(inp, "exit") == 0) /* probably split this into a dif func*/
 	{
 		tok = splitstr(NULL, &delim, &save);
-		push_hist(helper->hist_head, helper->env);
 		exitBuiltin(tok, inp, helper);
 	}
 	else if (allstrcmp(inp, "setenv") == 0) /*setenv*/
