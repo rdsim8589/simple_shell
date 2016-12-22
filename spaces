@@ -1,2 +1,0 @@
-command="ls\n\n\n /bin/ls \n\n\n     ls\nls     \n ls     "
-echo -e $command
