@@ -35,6 +35,8 @@ int cdBuiltin(char *save, helper_t *helper)
 			return (0);
 		}
 		tok = (getEnvPtr("OLDPWD", helper->env))->value;
+		_putstring(tok);
+		_putchar(10);
 	}
 	if (chdir(tok) != -1)
 	{
