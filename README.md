@@ -25,12 +25,6 @@ simple_shell is intended to be a conformant implementation of the Shell and Util
 ### Overview
 The simple_shell is a command that reads lines from either a file or the terminal, interprets them, and generally executes other commands.  It is the program that is running when the user runs gcc -Wall -Werror -Wextra -pedantic *.c -o hsh and runs the executable file, ./hsh. The simple_shell implements a language that has flow control constructs, a macro facility that provides a variety of features in addition to data storage, along with built in history and line editing capabilities.  It incorporates many features to aid interactive use and has the advantage that the interpretative language is common to both interactive and non-interactive use (shell scripts).  That is, commands can be typed directly to the running shell or can be put into a file and the file can be executed directly by the shell.
 
-### Lexical Structure
-The shell reads input in terms of lines from a file and breaks it up into words at whitespace (blanks and tabs), and at certain sequences of characters that are special to the shell called “operators”.  There are two types of operators: control operators and redirection operators (their meaning is discussed later). Following is a list of operators:
-
-    Operator
-	&&  ;  ||  |
-
 ### Simple Commands
  If a simple command has been recognized, the shell performs the following actions:
 
