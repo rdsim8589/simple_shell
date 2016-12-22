@@ -17,15 +17,6 @@ run
 ## SYNOPSIS
 simple_shell [command_string | file]
 
-
-A simple shell created for Holberton School. Partner project with @rdsim8589 &amp; @wintermanc3r
-Contact timothy.britton@holbertonschool.com or richard.sim@holbertonschool.com to correct errors or typos.
-
-
-## simple_shell - simple_shell is an sh-compatible command language interpreter that executes commands from the stand input or from a file.
-## SYNOPSIS
-simple_shell [command_string | file]
-
 ## DESCRIPTION
 simple_shell is an sh-compatible command language interpreter that executes commands read from the standard input or from a file.h.
 
