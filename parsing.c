@@ -19,7 +19,7 @@ char *parseComments(char *buf, helper_t *helper)
 		{
 			if (i == 0 || isDelimiter(buf[i - 1]) || buf[i - 1] == ' ')
 			{
-				while (!isDelimiter(buf[i]) && _strlen(buf) > i)
+				while (buf[i] != '\0' && _strlen(buf) > i)
 				{
 					buf = sliceString(buf, helper->bufsize, 1, i);
 				}
