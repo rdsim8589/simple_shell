@@ -65,6 +65,8 @@ int checkBuiltins(char *inp, helper_t *helper, char **args)
 		helpBuiltIn(args[1]);
 	else if (allstrcmp(inp, "alias") == 0)
 		aliasBuiltin(args, helper);
+	else if (allstrcmp(inp, "unalias") == 0)
+		unAlias(args[1], &helper->alias);
 	else
 		return (1);
 

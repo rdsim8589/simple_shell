@@ -215,6 +215,7 @@ char *insertLastExit(char *buf, helper_t *helper, int start);
 char *_strcat(char *dest, char *src);
 void *mloc(unsigned int b, helper_t *helper);
 
+int unAlias(char *name, alias_t **head);
 char *parseAlias(char *buf, helper_t *helper);
 void aliasBuiltin(char **args, helper_t *helper);
 int listAlias(helper_t *helper);

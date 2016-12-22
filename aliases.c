@@ -77,6 +77,8 @@ alias_t *addAlias(char **args, helper_t *helper, alias_t **head)
 	int i;
 
 	name = splitstr(args[1], "=", &save);
+	if (getAlias(name, helper->alias) != NULL)
+		unAlias(name, &helper->alias);
 	value = mloc(1000, helper);
 	_memset(value, '\0', 1000);
 	_strcat(value, save);
@@ -150,3 +152,4 @@ void free_alist(alias_t *head)
 	}
 	free(head);
 }
+
