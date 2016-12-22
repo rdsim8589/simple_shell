@@ -77,6 +77,8 @@ void exitBuiltin(char *tok, char *inp, helper_t *helper)
 	free(helper->last);
 	free(helper->bufsize);
 	free(helper->pid);
+	if (helper->alias != NULL)
+		free_alist(helper->alias);
 	if (helper->args != NULL)
 		free(helper->args);
 	free(helper);
@@ -153,7 +155,7 @@ int unsetEnv(char *name, env_t **head)
 		temp = temp->next;
 		i++;
 	}
-	_putstring("No such environmental variable.");
+	_putstring("No such environmental variable.\n");
 	return (-1);
 }
 

@@ -63,6 +63,8 @@ int checkBuiltins(char *inp, helper_t *helper, char **args)
 		cdBuiltin(args, helper);
 	else if (allstrcmp(inp, "help") == 0)
 		helpBuiltIn(args[1]);
+	else if (allstrcmp(inp, "alias") == 0)
+		aliasBuiltin(args, helper);
 	else
 		return (1);
 
@@ -159,10 +161,9 @@ char **getArgs(char *tok, char *argv[], char *save)
  * Currently this just allocates space out for 1000 pntrs, that's... a lot?
  */
 	(void) argv;
-	args = mloc(sizeof(char *) * 1000, NULL);
-	arg = NULL;
-	args[0] = tok;
 	arg = splitstr(NULL, &delim, &save);
+	args = mloc(sizeof(char *) * 1000, NULL);
+	args[0] = tok;
 	i = 1;
 	while (arg != NULL)
 	{

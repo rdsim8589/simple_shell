@@ -33,6 +33,7 @@ int main(int argc, char *argv[], char *envp[])
 		while (inp != NULL)
 		{
 			countLine(buf, helper);
+			inp = parseAlias(inp, helper);
 			inp = parseDollar(inp, helper);
 			tok = splitstr(inp, &delim, &save);
 			helper->args = getArgs(tok, args, save);
@@ -43,9 +44,9 @@ int main(int argc, char *argv[], char *envp[])
 					if (helper->lastExit != 0)
 					{ _putstring(tok); _putstring(": command not found.\n"); }
 				}
-			inp = moreLines(helper, buf, inp);
-			save = NULL; if (inp != NULL)
-				free(helper->args);
+			if (inp != NULL)
+			{ free(helper->args); helper->args = NULL; }
+			inp = moreLines(helper, buf, inp); save = NULL;
 		}
 		if (inp == NULL && (argc == 2 || helper->type == 0))
 			exitBuiltin("0", NULL, helper);
@@ -68,10 +69,12 @@ helper_t *setupMain(int argc, char **argv, char **envp)
 	env_t *head;
 	hist_t *hist_head;
 	helper_t *helper;
+	alias_t *alias;
 
 	pid = _getpid();
 	hist_head = NULL;
 	head = NULL;
+	alias = NULL;
 
 	if (argc > 2 || argv == NULL || envp == NULL)
 	{
@@ -82,6 +85,7 @@ helper_t *setupMain(int argc, char **argv, char **envp)
 	initEnvList(envp, &head);
 	hist_head = pull_hist(&hist_head, head);
 	helper = initHelper(head, hist_head, pid);
+	helper->alias = alias;
 
 	if (argc == 1)
 		helper->file = STDIN_FILENO;
@@ -150,6 +154,7 @@ helper_t *initHelper(env_t *env, hist_t *hist_head, char *pid)
 	helper->args = NULL;
 	helper->pid = pid;
 	helper->lastExit = 0;
+	helper->alias = NULL;
 
 	return (helper);
 }

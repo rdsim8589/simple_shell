@@ -36,6 +36,21 @@ typedef struct env_s
 } env_t;
 
 /**
+ * struct alias_s - a singly linked list
+ * @name: the environment variable
+ * @value: the environment variable value
+ * @next: the pointer to the next node of struct alias_s
+ *
+ * Description: the struct that stores the environment variables
+ */
+typedef struct alias_s
+{
+	char *name;
+	char *value;
+	struct alias_s *next;
+} alias_t;
+
+/**
  * struct hist_s - a singly linked list
  * @entry: pointer to the char* of a user's session
  * @next: pointer to the next linked list
@@ -65,11 +80,13 @@ typedef struct hist_s
  * @bufnext: pointer for next location in the buffer
  * @inphead: pointer to the head of the input list
  * @args: arguments, tokenized
+ * @alias: alias list head
  *
  * Description:
  */
 typedef struct helper_s
 {
+	alias_t *alias;
 	int linecount;
 	char **args;
 	char *bufnext;
@@ -197,4 +214,11 @@ char *insertPid(char *buf, helper_t *helper, int start);
 char *insertLastExit(char *buf, helper_t *helper, int start);
 char *_strcat(char *dest, char *src);
 void *mloc(unsigned int b, helper_t *helper);
+
+char *parseAlias(char *buf, helper_t *helper);
+void aliasBuiltin(char **args, helper_t *helper);
+int listAlias(helper_t *helper);
+void free_alist(alias_t *head);
+alias_t *getAlias(char *name, alias_t *head);
+alias_t *addAlias(char **args, helper_t *helper, alias_t **head);
 #endif
