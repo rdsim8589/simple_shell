@@ -23,7 +23,7 @@ char *whitespace(char *buf, helper_t *helper)
 			{
 				while (buf[i] == ' ')
 					buf = bufferDelete(buf, helper, i, 1);
-n			}
+			}
 			else if (i > 0 && buf[i] == ' '  && buf[i - 1] == ';')
 				while (buf[i] == ' ')
 					buf = bufferDelete(buf, helper, i, 1);
@@ -86,9 +86,6 @@ char *parseDollar(char *buf, helper_t *helper)
 	return (buf);
 }
 
-		char *sliceCat(char *buf, helper_t *helper)
-		{
-		}
 /**
  * parseComments - parses the comment portion of buffer
  * @buf: the buffer
@@ -146,7 +143,12 @@ int isDelimiter(char c)
 	else
 		return (0);
 }
-
+/**
+ * isWhitespace -  determines if a character is ' ', '\n', or '\t'
+ * @c: a character
+ *
+ * Return: 1 if found and 0 if no found
+ */
 int isWhitespace(char c)
 {
 	if (c == ' ' || c == '\n' || c == '\t')
