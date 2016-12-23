@@ -1,6 +1,5 @@
 #include "shell.h"
 
-
 /**
  * parseComments - removes comments from the buffer
  *
@@ -123,5 +122,6 @@ char *_getpid(void)
 	newbuf = mloc(_strlen(tok) + 1, NULL);
 	_memcpy(newbuf, tok, _strlen(tok) + 1);
 	free(buf);
+	close(file);
 	return (newbuf);
 }
